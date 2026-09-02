@@ -161,6 +161,12 @@
     font-family:inherit;
   }
   input[type="number"]{font-variant-numeric:tabular-nums}
+  .input-pct{position:relative}
+  .input-pct input{padding-right:26px;width:100%}
+  .input-pct .pct-suffix{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    font-size:12.5px;color:var(--text-muted);pointer-events:none;
+  }
 
   /* --- paso 1: estructura comercial --- */
   .costos-grid{
@@ -255,7 +261,8 @@
   td input,td select{min-width:76px}
   td.name-cell input{min-width:168px}
   td.placa-cell input{min-width:64px}
-  .col-narrow{width:78px}
+  td.vmv-cell input{min-width:120px}
+  .col-narrow{width:104px}
   .scroll-hint{font-size:11.5px;color:var(--text-muted)}
   .row-remove{
     border:none;background:none;color:var(--text-muted);
@@ -441,19 +448,19 @@
     <div class="costos-grid">
       <div>
         <label for="in-comision">% Comisión sobre venta esperada</label>
-        <input type="number" id="in-comision" min="0" step="0.5">
+        <div class="input-pct"><input type="number" id="in-comision" min="0" step="0.5"><span class="pct-suffix">%</span></div>
       </div>
       <div>
         <label for="in-superavit">% del superávit para SYC</label>
-        <input type="number" id="in-superavit" min="0" max="100" step="5">
+        <div class="input-pct"><input type="number" id="in-superavit" min="0" max="100" step="5"><span class="pct-suffix">%</span></div>
       </div>
       <div>
         <label for="in-costo-evento">Costo total del evento (COP)</label>
-        <input type="number" id="in-costo-evento" min="0" step="1000000">
+        <input type="text" inputmode="numeric" id="in-costo-evento">
       </div>
       <div>
         <label for="in-costo-pct">% del costo que asume SYC</label>
-        <input type="number" id="in-costo-pct" min="0" max="100" step="5">
+        <div class="input-pct"><input type="number" id="in-costo-pct" min="0" max="100" step="5"><span class="pct-suffix">%</span></div>
       </div>
     </div>
   </section>
@@ -496,7 +503,7 @@
     </div>
     <div class="effr-row">
       <label for="in-effrecup" style="margin:0">Efectividad Salvamento Recuperado</label>
-      <input type="number" id="in-effrecup" min="0" step="1">
+      <div class="input-pct"><input type="number" id="in-effrecup" min="0" step="1"><span class="pct-suffix">%</span></div>
       <span class="effr-note">— se aplica igual en los 4 escenarios (edítala si tu histórico dice otra cosa)</span>
     </div>
   </section>
@@ -546,11 +553,11 @@
     <div class="quick-grid">
       <div>
         <label for="in-quick-valor">Valor total esperado del negocio — VMV total (COP)</label>
-        <input type="number" id="in-quick-valor" min="0" step="1000000">
+        <input type="text" inputmode="numeric" id="in-quick-valor">
       </div>
       <div>
         <label for="in-quick-prob">% Probabilidad de adjudicación / cierre global</label>
-        <input type="number" id="in-quick-prob" min="0" max="100" step="5">
+        <div class="input-pct"><input type="number" id="in-quick-prob" min="0" max="100" step="5"><span class="pct-suffix">%</span></div>
       </div>
     </div>
     <div class="table-scroll">
@@ -618,6 +625,38 @@
     }catch(e){ return ''; }
   };
   var uid = function(){ return 'r' + Math.random().toString(36).slice(2,10); };
+
+  // ---------- miles: formato "30.000.000" en campos de dinero (COP) ----------
+  function formatMiles(n){
+    n = Math.round(Number(n) || 0);
+    return n.toLocaleString('es-CO');
+  }
+  function parseMiles(str){
+    var digits = String(str == null ? '' : str).replace(/[^\d]/g, '');
+    return digits === '' ? 0 : parseInt(digits, 10);
+  }
+  function setMilesValue(input, n){ input.value = formatMiles(n); }
+  function wireThousands(input, onChange){
+    input.addEventListener('input', function(){
+      var raw = input.value;
+      var cursorPos = input.selectionStart == null ? raw.length : input.selectionStart;
+      var digitsBeforeCursor = raw.slice(0, cursorPos).replace(/[^\d]/g, '').length;
+      var digits = raw.replace(/[^\d]/g, '');
+      var num = digits === '' ? 0 : parseInt(digits, 10);
+      var formatted = digits === '' ? '' : num.toLocaleString('es-CO');
+      input.value = formatted;
+      var pos = 0, seen = 0;
+      while(pos < formatted.length && seen < digitsBeforeCursor){
+        if(/\d/.test(formatted[pos])) seen++;
+        pos++;
+      }
+      try{ input.setSelectionRange(pos, pos); }catch(e){}
+      onChange(num);
+    });
+    input.addEventListener('blur', function(){
+      if(input.value === '') input.value = '0';
+    });
+  }
 
   var SALA_PRESETS = [
     {key:'base', label:'Base', icon:'🧊', usada:105, salvamento:95},
@@ -833,7 +872,7 @@
   function renderPaso1(){
     inComision.value = state.comisionPct;
     inSuperavit.value = state.superavitPct;
-    inCostoEvento.value = state.costoEvento;
+    setMilesValue(inCostoEvento, state.costoEvento);
     inCostoPct.value = state.costoSYCPct;
   }
   function syncComercialByType(){
@@ -844,7 +883,7 @@
   }
   inComision.addEventListener('input', function(){ state.comisionPct = Number(inComision.value)||0; syncComercialByType(); update(); saveLocal(); });
   inSuperavit.addEventListener('input', function(){ state.superavitPct = Number(inSuperavit.value)||0; syncComercialByType(); update(); saveLocal(); });
-  inCostoEvento.addEventListener('input', function(){ state.costoEvento = Number(inCostoEvento.value)||0; syncComercialByType(); update(); saveLocal(); });
+  wireThousands(inCostoEvento, function(num){ state.costoEvento = num; syncComercialByType(); update(); saveLocal(); });
   inCostoPct.addEventListener('input', function(){ state.costoSYCPct = Number(inCostoPct.value)||0; syncComercialByType(); update(); saveLocal(); });
 
   // ---------- Tipo de evento: Presencial / Virtual ----------
@@ -919,6 +958,8 @@
       tr.appendChild(tdName);
 
       var td = document.createElement('td');
+      var wrap = document.createElement('div');
+      wrap.className = 'input-pct';
       var input = document.createElement('input');
       input.type = 'number'; input.min = 0; input.step = 1;
       input.value = row.eff;
@@ -927,17 +968,22 @@
         update();
         saveLocal();
       });
-      td.appendChild(input);
+      wrap.appendChild(input);
+      var sufEff = document.createElement('span');
+      sufEff.className = 'pct-suffix';
+      sufEff.textContent = '%';
+      wrap.appendChild(sufEff);
+      td.appendChild(wrap);
       tr.appendChild(td);
       quickBody.appendChild(tr);
     });
   }
   function renderPasoRapido(){
-    inQuickValor.value = state.quickValorTotal;
+    setMilesValue(inQuickValor, state.quickValorTotal);
     inQuickProb.value = state.quickProbAdj;
     renderQuickTable();
   }
-  inQuickValor.addEventListener('input', function(){ state.quickValorTotal = Number(inQuickValor.value)||0; update(); saveLocal(); });
+  wireThousands(inQuickValor, function(num){ state.quickValorTotal = num; update(); saveLocal(); });
   inQuickProb.addEventListener('input', function(){ state.quickProbAdj = Number(inQuickProb.value)||0; update(); saveLocal(); });
 
   // ---------- Paso 3/4 (detallado): efectividad por calor de sala ----------
@@ -955,6 +1001,8 @@
 
       ['usada','salvamento'].forEach(function(field){
         var td = document.createElement('td');
+        var wrap = document.createElement('div');
+        wrap.className = 'input-pct';
         var input = document.createElement('input');
         input.type = 'number'; input.min = 0; input.step = 1;
         input.value = row[field];
@@ -963,7 +1011,12 @@
           update();
           saveLocal();
         });
-        td.appendChild(input);
+        wrap.appendChild(input);
+        var sufSala = document.createElement('span');
+        sufSala.className = 'pct-suffix';
+        sufSala.textContent = '%';
+        wrap.appendChild(sufSala);
+        td.appendChild(wrap);
         tr.appendChild(td);
       });
       salaBody.appendChild(tr);
@@ -1051,19 +1104,27 @@
       tr.appendChild(tdPrioridad);
 
       var tdVmv = document.createElement('td');
+      tdVmv.className = 'vmv-cell';
       var vmvInput = document.createElement('input');
-      vmvInput.type = 'number'; vmvInput.min = 0; vmvInput.step = 500000;
-      vmvInput.value = lot.vmv;
-      vmvInput.addEventListener('input', function(){ lot.vmv = Number(vmvInput.value)||0; update(); saveLocal(); });
+      vmvInput.type = 'text'; vmvInput.inputMode = 'numeric';
+      setMilesValue(vmvInput, lot.vmv);
+      wireThousands(vmvInput, function(num){ lot.vmv = num; update(); saveLocal(); });
       tdVmv.appendChild(vmvInput);
       tr.appendChild(tdVmv);
 
       var tdProb = document.createElement('td');
+      var wrapProb = document.createElement('div');
+      wrapProb.className = 'input-pct';
       var probInput = document.createElement('input');
       probInput.type = 'number'; probInput.min = 0; probInput.max = 100; probInput.step = 5;
       probInput.value = lot.probAdj;
       probInput.addEventListener('input', function(){ lot.probAdj = Number(probInput.value)||0; update(); saveLocal(); });
-      tdProb.appendChild(probInput);
+      wrapProb.appendChild(probInput);
+      var sufProb = document.createElement('span');
+      sufProb.className = 'pct-suffix';
+      sufProb.textContent = '%';
+      wrapProb.appendChild(sufProb);
+      tdProb.appendChild(wrapProb);
       tr.appendChild(tdProb);
 
       var tdRemove = document.createElement('td');
