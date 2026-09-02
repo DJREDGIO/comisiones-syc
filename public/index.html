@@ -679,13 +679,13 @@
   var state = {
     mode: 'detallado', // 'detallado' | 'rapido'
     eventType: 'presencial', // 'presencial' | 'virtual'
-    comisionPct: 3,
+    comisionPct: 10,
     superavitPct: 50,
     costoEvento: 30000000,
     costoSYCPct: 50,
     comercialByType: {
-      presencial: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
-      virtual: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}
+      presencial: {comisionPct:10, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
+      virtual: {comisionPct:10, superavitPct:50, costoEvento:5000000, costoSYCPct:50}
     },
     effRecup: 100,
     salaPresets: SALA_PRESETS.map(function(s){ return Object.assign({}, s); }),
@@ -730,13 +730,13 @@
   function seedExample(){
     state.mode = 'detallado';
     state.eventType = 'presencial';
-    state.comisionPct = 3;
+    state.comisionPct = 10;
     state.superavitPct = 50;
     state.costoEvento = 30000000;
     state.costoSYCPct = 50;
     state.comercialByType = {
-      presencial: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
-      virtual: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}
+      presencial: {comisionPct:10, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
+      virtual: {comisionPct:10, superavitPct:50, costoEvento:5000000, costoSYCPct:50}
     };
     state.effRecup = 100;
     state.salaPresets = SALA_PRESETS.map(function(s){ return Object.assign({}, s); });
@@ -863,7 +863,7 @@
     if(type === state.eventType) return;
     syncComercialByType();
     state.eventType = type;
-    var c = state.comercialByType[type] || {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50};
+    var c = state.comercialByType[type] || {comisionPct:10, superavitPct:50, costoEvento: (type === 'virtual' ? 5000000 : 30000000), costoSYCPct:50};
     state.comisionPct = c.comisionPct;
     state.superavitPct = c.superavitPct;
     state.costoEvento = c.costoEvento;
@@ -1311,8 +1311,8 @@
         state.quickPresets = (entry.doc.quickPresets || QUICK_PRESETS).map(function(r){ return Object.assign({}, r); });
         state.eventType = entry.doc.eventType === 'virtual' ? 'virtual' : 'presencial';
         state.comercialByType = entry.doc.comercialByType ? {
-          presencial: Object.assign({comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}, entry.doc.comercialByType.presencial),
-          virtual: Object.assign({comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}, entry.doc.comercialByType.virtual)
+          presencial: Object.assign({comisionPct:10, superavitPct:50, costoEvento:30000000, costoSYCPct:50}, entry.doc.comercialByType.presencial),
+          virtual: Object.assign({comisionPct:10, superavitPct:50, costoEvento:5000000, costoSYCPct:50}, entry.doc.comercialByType.virtual)
         } : {
           presencial: {comisionPct: entry.doc.comisionPct, superavitPct: entry.doc.superavitPct, costoEvento: entry.doc.costoEvento, costoSYCPct: entry.doc.costoSYCPct},
           virtual: {comisionPct: entry.doc.comisionPct, superavitPct: entry.doc.superavitPct, costoEvento: entry.doc.costoEvento, costoSYCPct: entry.doc.costoSYCPct}
