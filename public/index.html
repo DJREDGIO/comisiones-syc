@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyección de Comisiones — SYC</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#f2f5f7;
+    --surface:#ffffff;
+    --surface-2:#eef2f5;
+    --row-alt:#f8fafb;
+    --border:#dbe3ea;
+    --text:#16233a;
+    --text-muted:#5b6b80;
+    --header-bg:#162842;
+    --header-text:#eef3f8;
+    --header-sub:#9db3cc;
+    --accent:#00967f;
+    --accent-strong:#007c69;
+    --accent-soft:#e1f5f0;
+    --accent-2:#e0530f;
+    --accent-2-soft:#fde9de;
+    --danger:#c8443c;
+    --danger-soft:#fbe7e5;
+    --focus:#2f7ff5;
+    --shadow:0 1px 2px rgba(22,35,58,.06),0 8px 24px -12px rgba(22,35,58,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0b1420;
+      --surface:#111e32;
+      --surface-2:#16263e;
+      --row-alt:#0e1a2c;
+      --border:#26395a;
+      --text:#e7edf5;
+      --text-muted:#8fa2ba;
+      --header-bg:#0a1424;
+      --header-text:#eef3f8;
+      --header-sub:#7d93b0;
+      --accent:#22c9a9;
+      --accent-strong:#3fe0c0;
+      --accent-soft:#0f3630;
+      --accent-2:#ff8a4d;
+      --accent-2-soft:#3a2314;
+      --danger:#f0776e;
+      --danger-soft:#3a1a18;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 28px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b1420;
+    --surface:#111e32;
+    --surface-2:#16263e;
+    --row-alt:#0e1a2c;
+    --border:#26395a;
+    --text:#e7edf5;
+    --text-muted:#8fa2ba;
+    --header-bg:#0a1424;
+    --header-text:#eef3f8;
+    --header-sub:#7d93b0;
+    --accent:#22c9a9;
+    --accent-strong:#3fe0c0;
+    --accent-soft:#0f3630;
+    --accent-2:#ff8a4d;
+    --accent-2-soft:#3a2314;
+    --danger:#f0776e;
+    --danger-soft:#3a1a18;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 28px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Roboto",-apple-system,Segoe UI,sans-serif;
+    font-size:15px;
+    line-height:1.45;
+  }
+  h1,h2,h3{
+    font-family:"Roboto Condensed","Roboto",sans-serif;
+    text-wrap:balance;
+    margin:0;
+  }
+  .num{font-variant-numeric:tabular-nums}
+  button{font:inherit}
+  input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  .topbar{
+    background:var(--header-bg);
+    color:var(--header-text);
+    padding:18px clamp(16px,4vw,40px);
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .brand-mark{
+    width:40px;height:40px;border-radius:9px;
+    background:var(--accent);
+    color:#06251f;
+    font-family:"Roboto Condensed",sans-serif;
+    font-weight:700;
+    font-size:15px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .brand-text strong{
+    display:block;font-size:15px;font-weight:700;letter-spacing:.2px;
+  }
+  .brand-text span{
+    display:block;font-size:13px;color:var(--header-sub);
+  }
+
+  main{
+    max-width:1220px;
+    margin:0 auto;
+    padding:clamp(16px,4vw,32px) clamp(16px,4vw,40px) 64px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:20px clamp(16px,3vw,26px);
+  }
+  .card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .card-head h2{font-size:19px;font-weight:700}
+  .card-head .hint{font-size:13px;color:var(--text-muted)}
+  .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-strong);
+    margin:0 0 4px;
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--text-muted);
+    margin-bottom:5px;
+    font-weight:500;
+  }
+  input[type="text"],input[type="number"],select{
+    width:100%;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:8px 10px;
+    color:var(--text);
+    font-size:14px;
+    font-family:inherit;
+  }
+  input[type="number"]{font-variant-numeric:tabular-nums}
+
+  /* --- paso 1: estructura comercial --- */
+  .costos-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:14px;
+  }
+
+  /* --- paso 2: efectividad por calor de sala --- */
+  .sala-table{width:100%;border-collapse:collapse}
+  .sala-table th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--text-muted);font-weight:700;padding:0 8px 8px;
+  }
+  .sala-table td{padding:5px 8px}
+  .sala-table td.sala-name{font-size:13.5px;font-weight:600;white-space:nowrap;padding-top:9px}
+  .sala-icon{margin-right:6px}
+  .effr-row{
+    margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding-top:14px;border-top:1px solid var(--border);
+  }
+  .effr-row label{margin:0;white-space:nowrap}
+  .effr-row input{max-width:110px}
+  .effr-note{font-size:12px;color:var(--text-muted)}
+
+  /* --- paso 3: alcance + tabla de lotes --- */
+  .scope-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;
+    border:1px solid var(--border);border-radius:100px;
+    padding:7px 13px 7px 11px;font-size:13px;font-weight:500;cursor:pointer;
+    background:var(--surface-2);user-select:none;
+  }
+  .chip input{margin:0;accent-color:var(--accent)}
+  .chip.checked{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-soft)}
+  .chip .n{color:var(--text-muted);font-weight:400}
+  .chip.checked .n{color:var(--accent-strong)}
+
+  .table-scroll{overflow-x:auto;border-radius:9px;border:1px solid var(--border)}
+  table.lots{border-collapse:collapse;width:100%;min-width:880px}
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--text-muted);
+    font-weight:700;
+    background:var(--surface-2);
+    padding:9px 10px;
+    white-space:nowrap;
+    border-bottom:1px solid var(--border);
+  }
+  tbody td{
+    padding:6px 8px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  tbody tr:nth-child(even){background:var(--row-alt)}
+  tbody tr:last-child td{border-bottom:none}
+  td input,td select{min-width:76px}
+  td.name-cell input{min-width:168px}
+  td.placa-cell input{min-width:64px}
+  .col-narrow{width:78px}
+  .scroll-hint{font-size:11.5px;color:var(--text-muted)}
+  .row-remove{
+    border:none;background:none;color:var(--text-muted);
+    cursor:pointer;font-size:16px;line-height:1;padding:6px;border-radius:6px;
+  }
+  .row-remove:hover{color:var(--danger);background:var(--danger-soft)}
+
+  .table-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+
+  .btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    padding:9px 15px;
+    border-radius:8px;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn-primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#06251f;
+    font-weight:700;
+  }
+  .btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-ghost{background:none;border-color:transparent;color:var(--text-muted)}
+  .btn-ghost:hover{color:var(--text);border-color:var(--border)}
+  .btn-danger-confirm{background:var(--danger);border-color:var(--danger);color:#fff}
+
+  /* --- resumen --- */
+  .scenario-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  @media (max-width:980px){.scenario-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.scenario-grid{grid-template-columns:1fr}}
+  .scenario-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px;
+    background:var(--surface-2);
+    position:relative;
+  }
+  .scenario-card.is-base{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .scenario-label{
+    font-family:"Roboto Condensed",sans-serif;
+    font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--text-muted);
+    display:flex;align-items:center;gap:6px;
+  }
+  .scenario-card.is-base .scenario-label{color:var(--accent-strong)}
+  .scenario-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+  .scenario-net{
+    font-family:"Roboto Condensed",sans-serif;
+    font-size:clamp(20px,2.6vw,25px);
+    font-weight:700;
+    margin:8px 0 10px;
+  }
+  .scenario-net.negative{color:var(--danger)}
+  .scenario-lines{font-size:12.5px;color:var(--text-muted);display:flex;flex-direction:column;gap:3px}
+  .scenario-lines .line{display:flex;justify-content:space-between;gap:10px}
+  .scenario-lines .line span:last-child{font-variant-numeric:tabular-nums;color:var(--text)}
+  .scenario-lines .line.strong span:last-child{font-weight:700;color:var(--text)}
+  .scenario-lines .line.sub{opacity:.8;padding-top:4px;border-top:1px dashed var(--border);margin-top:2px}
+
+  .chart-wrap{
+    margin-top:20px;
+    display:flex;
+    gap:20px;
+    align-items:flex-end;
+    height:170px;
+    padding:0 6px;
+    border-top:1px solid var(--border);
+    padding-top:10px;
+  }
+  .chart-col{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    height:100%;
+    justify-content:flex-end;
+    position:relative;
+  }
+  .chart-bar-track{
+    width:100%;
+    max-width:120px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    position:relative;
+  }
+  .chart-bar{
+    width:100%;
+    border-radius:5px 5px 0 0;
+    background:var(--accent);
+    transition:height .2s ease;
+  }
+  .chart-bar.negative{background:var(--danger);border-radius:0 0 5px 5px}
+  .chart-value{font-size:11.5px;font-weight:700;margin-bottom:4px;font-variant-numeric:tabular-nums;text-align:center}
+  .chart-name{font-size:11px;color:var(--text-muted);margin-top:8px;text-transform:uppercase;letter-spacing:.03em;text-align:center}
+
+  /* --- guardar / comparar --- */
+  .save-form{
+    display:grid;
+    grid-template-columns:1.4fr 1fr auto;
+    gap:10px;
+    align-items:end;
+    margin-bottom:16px;
+  }
+  @media (max-width:640px){.save-form{grid-template-columns:1fr}}
+
+  .status-note{font-size:12.5px;color:var(--text-muted);margin-top:8px}
+  .status-note.warn{color:var(--accent-2)}
+
+  .scenario-list{display:flex;flex-direction:column;gap:10px}
+  .saved-row{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .saved-row.is-top{border-color:var(--accent-2);background:var(--accent-2-soft)}
+  .saved-main{flex:1;min-width:200px}
+  .saved-name{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .saved-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
+  .badge{
+    font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    background:var(--accent-2);color:#fff;padding:2px 8px;border-radius:100px;
+  }
+  .saved-figures{display:flex;gap:16px;font-size:12px}
+  .saved-figures div{text-align:right}
+  .saved-figures .fv{font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;display:block}
+  .saved-figures .fl{color:var(--text-muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+  .saved-actions{display:flex;gap:8px}
+  .empty-state{font-size:13.5px;color:var(--text-muted);padding:18px 4px;text-align:center}
+
+  footer{
+    max-width:1220px;margin:0 auto;padding:0 clamp(16px,4vw,40px) 40px;
+    font-size:12px;color:var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+
+<header class="topbar">
+  <div class="brand-mark">SYC</div>
+  <div class="brand-text">
+    <strong>Subastas y Comercio SAS</strong>
+    <span>Proyección de comisiones — modelo comisión + superávit</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 1</p>
+        <h2>Estructura comercial de la comisión</h2>
+      </div>
+      <span class="hint">SYC cobra un % sobre la venta esperada, más un % del superávit cuando el lote cierra por encima del VMV</span>
+    </div>
+    <div class="costos-grid">
+      <div>
+        <label for="in-comision">% Comisión sobre venta esperada</label>
+        <input type="number" id="in-comision" min="0" step="0.5">
+      </div>
+      <div>
+        <label for="in-superavit">% del superávit para SYC</label>
+        <input type="number" id="in-superavit" min="0" max="100" step="5">
+      </div>
+      <div>
+        <label for="in-costo-evento">Costo total del evento (COP)</label>
+        <input type="number" id="in-costo-evento" min="0" step="1000000">
+      </div>
+      <div>
+        <label for="in-costo-pct">% del costo que asume SYC</label>
+        <input type="number" id="in-costo-pct" min="0" max="100" step="5">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 2</p>
+        <h2>Efectividad esperada sobre el VMV, por calor de sala</h2>
+      </div>
+      <span class="hint">% del Valor Mínimo de Venta que se espera cerrar cada tipo de lote</span>
+    </div>
+    <div class="table-scroll">
+      <table class="sala-table">
+        <thead>
+          <tr><th>Escenario de sala</th><th>Usada / Usado</th><th>Salvamento</th></tr>
+        </thead>
+        <tbody id="sala-body"></tbody>
+      </table>
+    </div>
+    <div class="effr-row">
+      <label for="in-effrecup" style="margin:0">Efectividad Salvamento Recuperado</label>
+      <input type="number" id="in-effrecup" min="0" step="1">
+      <span class="effr-note">— se aplica igual en los 4 escenarios (edítala si tu histórico dice otra cosa)</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 3</p>
+        <h2>Lotes de la subasta</h2>
+      </div>
+      <span class="hint" id="tabla-hint">Inventario Conceptos21 — subasta presencial 18 sep 2026</span>
+    </div>
+    <div class="scope-chips" id="scope-chips"></div>
+    <div class="table-scroll">
+      <table class="lots">
+        <thead>
+          <tr>
+            <th>Vehículo</th>
+            <th>Placa</th>
+            <th>Amparo</th>
+            <th>Prioridad</th>
+            <th>VMV</th>
+            <th class="col-narrow">% Prob. adjudicación</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="rows-body"></tbody>
+      </table>
+    </div>
+    <div class="table-actions">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <button class="btn" id="btn-add-row" type="button">+ Agregar lote</button>
+        <span class="scroll-hint">Desliza la tabla hacia la derecha para ver todas las columnas</span>
+      </div>
+      <button class="btn btn-ghost" id="btn-reset-example" type="button">Restablecer inventario Conceptos21</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Resultado</p>
+        <h2>Comparación por calor de sala</h2>
+      </div>
+      <span class="hint">Venta esperada × comisión, más superávit × participación SYC, menos el costo del evento</span>
+    </div>
+    <div class="scenario-grid" id="scenario-grid"></div>
+    <div class="chart-wrap" id="chart-wrap"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 4</p>
+        <h2>Guardar y comparar escenarios con el equipo</h2>
+      </div>
+      <span class="hint">Visible para cualquier persona de SYC que abra este enlace</span>
+    </div>
+    <div class="save-form">
+      <div>
+        <label for="sv-nombre">Nombre del escenario</label>
+        <input type="text" id="sv-nombre" placeholder="p. ej. 3% + 50% superávit — Alto+Medio">
+      </div>
+      <div>
+        <label for="sv-autor">Tu nombre</label>
+        <input type="text" id="sv-autor" placeholder="p. ej. Sergio">
+      </div>
+      <button class="btn btn-primary" id="btn-save" type="button">Guardar escenario</button>
+    </div>
+    <p class="status-note" id="db-status">Conectando con el guardado compartido…</p>
+
+    <div class="scenario-list" id="scenario-list"></div>
+  </section>
+
+</main>
+
+<footer>
+  Herramienta interna de Subastas y Comercio SAS. Las cifras son proyecciones de trabajo, no cotizaciones formales.
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var fmtCOP = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', maximumFractionDigits:0});
+  var fmtDate = function(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleDateString('es-CO', {day:'2-digit', month:'short', year:'numeric'}) + ' · ' +
+             d.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+    }catch(e){ return ''; }
+  };
+  var uid = function(){ return 'r' + Math.random().toString(36).slice(2,10); };
+
+  var SALA_PRESETS = [
+    {key:'base', label:'Base', icon:'🧊', usada:105, salvamento:95},
+    {key:'buena', label:'Buena sala', icon:'🌤️', usada:110, salvamento:100},
+    {key:'excelente', label:'Excelente', icon:'☀️', usada:115, salvamento:103},
+    {key:'caliente', label:'Sala caliente', icon:'🔥', usada:120, salvamento:105}
+  ];
+  var PRIORIDADES = [
+    {key:'alto', label:'Prioridad alta'},
+    {key:'medio', label:'Prioridad media'},
+    {key:'bajo', label:'Prioridad baja'}
+  ];
+  var AMPAROS = [
+    {key:'usada', label:'Usada / Usado'},
+    {key:'salvrecup', label:'Salvamento Recuperado'},
+    {key:'salvamento', label:'Salvamento'}
+  ];
+
+  var EXAMPLE_LOTES = [
+    ['VW Saveiro','KQT855','usada','alto',60000000,80],
+    ['VW Amarok Trendline','GJP465','usada','alto',96000000,75],
+    ['Suzuki Alto','GLT960','usada','alto',33000000,85],
+    ['Ford Fiesta','UUV902','usada','alto',33000000,80],
+    ['Kia Picanto','JRX988','usada','alto',56000000,82],
+    ['Hyundai Grand i10','EBO201','usada','alto',40000000,80],
+    ['Suzuki Alto 800','GLY939','salvamento','medio',32000000,40],
+    ['Mitsubishi Montero','FPQ472','usada','medio',110000000,50],
+    ['Ford Edge','RDQ249','usada','medio',41000000,45],
+    ['VW Voyage','KQU599','salvamento','medio',43000000,40],
+    ['Kia Carens','BZS407','usada','medio',30000000,50],
+    ['DFSK EQ50','WPK507','usada','medio',50000000,55],
+    ['Kia Picanto','MJM887','salvrecup','medio',35000000,45],
+    ['Mazda 3 GT LX','DWP412','salvrecup','medio',68000000,50],
+    ['Mazda CX5','DSN027','salvrecup','medio',78000000,45],
+    ['Toyota Fortuner SR','NTL134','salvamento','medio',140000000,45],
+    ['Grand Vitara Híbrida','NXT301','salvamento','medio',95000000,45],
+    ['Toyota Fortuner 2.7','PBT100','salvamento','medio',155000000,45],
+    ['Mercedes C 200 CGI','S','salvamento','bajo',82000000,15],
+    ['BMW i3 Eléctrico','FQW155','salvamento','bajo',75000000,10],
+    ['BMW X6 M','MCZ385','usada','bajo',142000000,15],
+    ['BMW 220i Coupé','EJT681','salvamento','bajo',85000000,10],
+    ['Mercedes GLA 200','ZZP716','salvamento','bajo',55000000,20],
+    ['Mercedes Benz C180','BRH692','usada','bajo',28000000,15],
+    ['Citroën C3','REP599','salvamento','bajo',18000000,15],
+    ['Audi A4','RIX724','usada','bajo',45000000,20],
+    ['Jeep Compass','GHA126','usada','bajo',25000000,20],
+    ['Mini Cooper S','EFL443','salvamento','bajo',58000000,15],
+    ['BMW 118','IDU667','usada','bajo',48000000,15]
+  ].map(function(r){
+    return {id:uid(), nombre:r[0], placa:r[1], amparo:r[2], prioridad:r[3], vmv:r[4], probAdj:r[5]};
+  });
+
+  var state = {
+    comisionPct: 3,
+    superavitPct: 50,
+    costoEvento: 30000000,
+    costoSYCPct: 50,
+    effRecup: 100,
+    salaPresets: SALA_PRESETS.map(function(s){ return Object.assign({}, s); }),
+    prioridadesIncluidas: {alto:true, medio:true, bajo:true},
+    lotes: [],
+    isExample: true
+  };
+
+  // ---------- persistence (per-viewer convenience only) ----------
+  var LS_KEY = 'syc-comision-builder-v2';
+  function loadLocal(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      if(!raw) return false;
+      var parsed = JSON.parse(raw);
+      if(parsed && Array.isArray(parsed.lotes) && parsed.lotes.length){
+        Object.assign(state, parsed);
+        state.isExample = false;
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+  function saveLocal(){
+    try{
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        comisionPct: state.comisionPct, superavitPct: state.superavitPct,
+        costoEvento: state.costoEvento, costoSYCPct: state.costoSYCPct,
+        effRecup: state.effRecup, salaPresets: state.salaPresets,
+        prioridadesIncluidas: state.prioridadesIncluidas, lotes: state.lotes
+      }));
+    }catch(e){}
+  }
+
+  function seedExample(){
+    state.comisionPct = 3;
+    state.superavitPct = 50;
+    state.costoEvento = 30000000;
+    state.costoSYCPct = 50;
+    state.effRecup = 100;
+    state.salaPresets = SALA_PRESETS.map(function(s){ return Object.assign({}, s); });
+    state.prioridadesIncluidas = {alto:true, medio:true, bajo:true};
+    state.lotes = EXAMPLE_LOTES.map(function(l){ return Object.assign({}, l, {id: uid()}); });
+    state.isExample = true;
+  }
+
+  // ---------- calculations ----------
+  function effectivenessFor(lot, salaRow, effRecup){
+    if(lot.amparo === 'usada') return salaRow.usada;
+    if(lot.amparo === 'salvamento') return salaRow.salvamento;
+    return effRecup;
+  }
+
+  function calcLot(lot, salaRow, effRecup, comisionPct, superavitPct){
+    var effRatio = effectivenessFor(lot, salaRow, effRecup) / 100;
+    var prob = (Number(lot.probAdj) || 0) / 100;
+    var vmv = Number(lot.vmv) || 0;
+    var venta = vmv * effRatio * prob;
+    var superavit = Math.max(0, vmv * (effRatio - 1)) * prob;
+    var comision = venta * (Number(comisionPct)||0) / 100;
+    var superavitSYC = superavit * (Number(superavitPct)||0) / 100;
+    return {venta:venta, superavit:superavit, comision:comision, superavitSYC:superavitSYC, totalSYC: comision + superavitSYC};
+  }
+
+  function includedLotes(lotes, prioridadesIncluidas){
+    return lotes.filter(function(l){ return prioridadesIncluidas[l.prioridad]; });
+  }
+
+  function calcScenario(lotes, salaRow, s){
+    var incl = includedLotes(lotes, s.prioridadesIncluidas);
+    var venta=0, superavit=0, comision=0, superavitSYC=0;
+    incl.forEach(function(lot){
+      var r = calcLot(lot, salaRow, s.effRecup, s.comisionPct, s.superavitPct);
+      venta += r.venta; superavit += r.superavit; comision += r.comision; superavitSYC += r.superavitSYC;
+    });
+    var ingresoBruto = comision + superavitSYC;
+    var costoSYC = (Number(s.costoEvento)||0) * (Number(s.costoSYCPct)||0) / 100;
+    var utilidadNeta = ingresoBruto - costoSYC;
+    var conceptos21 = venta - ingresoBruto;
+    return {
+      lotesIncluidos: incl.length, lotesTotal: lotes.length,
+      venta:venta, superavit:superavit, comision:comision, superavitSYC:superavitSYC,
+      ingresoBruto:ingresoBruto, costoSYC:costoSYC, utilidadNeta:utilidadNeta, conceptos21:conceptos21
+    };
+  }
+
+  function calcAllSala(lotes, s){
+    var out = {};
+    s.salaPresets.forEach(function(row){ out[row.key] = calcScenario(lotes, row, s); });
+    return out;
+  }
+
+  // ---------- Paso 1: estructura comercial ----------
+  var inComision = document.getElementById('in-comision');
+  var inSuperavit = document.getElementById('in-superavit');
+  var inCostoEvento = document.getElementById('in-costo-evento');
+  var inCostoPct = document.getElementById('in-costo-pct');
+
+  function renderPaso1(){
+    inComision.value = state.comisionPct;
+    inSuperavit.value = state.superavitPct;
+    inCostoEvento.value = state.costoEvento;
+    inCostoPct.value = state.costoSYCPct;
+  }
+  inComision.addEventListener('input', function(){ state.comisionPct = Number(inComision.value)||0; update(); saveLocal(); });
+  inSuperavit.addEventListener('input', function(){ state.superavitPct = Number(inSuperavit.value)||0; update(); saveLocal(); });
+  inCostoEvento.addEventListener('input', function(){ state.costoEvento = Number(inCostoEvento.value)||0; update(); saveLocal(); });
+  inCostoPct.addEventListener('input', function(){ state.costoSYCPct = Number(inCostoPct.value)||0; update(); saveLocal(); });
+
+  // ---------- Paso 2: efectividad por calor de sala ----------
+  var salaBody = document.getElementById('sala-body');
+  var inEffRecup = document.getElementById('in-effrecup');
+
+  function renderSalaTable(){
+    salaBody.innerHTML = '';
+    state.salaPresets.forEach(function(row){
+      var tr = document.createElement('tr');
+      var tdName = document.createElement('td');
+      tdName.className = 'sala-name';
+      tdName.innerHTML = '<span class="sala-icon">' + row.icon + '</span>' + row.label;
+      tr.appendChild(tdName);
+
+      ['usada','salvamento'].forEach(function(field){
+        var td = document.createElement('td');
+        var input = document.createElement('input');
+        input.type = 'number'; input.min = 0; input.step = 1;
+        input.value = row[field];
+        input.addEventListener('input', function(){
+          row[field] = Number(input.value) || 0;
+          update();
+          saveLocal();
+        });
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+      salaBody.appendChild(tr);
+    });
+  }
+  function renderPaso2(){
+    inEffRecup.value = state.effRecup;
+    renderSalaTable();
+  }
+  inEffRecup.addEventListener('input', function(){ state.effRecup = Number(inEffRecup.value)||0; update(); saveLocal(); });
+
+  // ---------- Paso 3: alcance + tabla de lotes ----------
+  var scopeChips = document.getElementById('scope-chips');
+  var rowsBody = document.getElementById('rows-body');
+  var tablaHint = document.getElementById('tabla-hint');
+
+  function renderScopeChips(){
+    scopeChips.innerHTML = '';
+    PRIORIDADES.forEach(function(p){
+      var n = state.lotes.filter(function(l){ return l.prioridad === p.key; }).length;
+      var label = document.createElement('label');
+      label.className = 'chip' + (state.prioridadesIncluidas[p.key] ? ' checked' : '');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = state.prioridadesIncluidas[p.key];
+      cb.addEventListener('change', function(){
+        state.prioridadesIncluidas[p.key] = cb.checked;
+        label.className = 'chip' + (cb.checked ? ' checked' : '');
+        update();
+        saveLocal();
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(p.label + ' '));
+      var span = document.createElement('span');
+      span.className = 'n';
+      span.textContent = '(' + n + ')';
+      label.appendChild(span);
+      scopeChips.appendChild(label);
+    });
+  }
+
+  function makeSelect(options, value, onChange){
+    var sel = document.createElement('select');
+    options.forEach(function(o){
+      var opt = document.createElement('option');
+      opt.value = o.key; opt.textContent = o.label;
+      if(o.key === value) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', function(){ onChange(sel.value); });
+    return sel;
+  }
+
+  function renderRows(){
+    rowsBody.innerHTML = '';
+    state.lotes.forEach(function(lot){
+      var tr = document.createElement('tr');
+
+      var tdName = document.createElement('td');
+      tdName.className = 'name-cell';
+      var nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = lot.nombre;
+      nameInput.addEventListener('input', function(){ lot.nombre = nameInput.value; saveLocal(); });
+      tdName.appendChild(nameInput);
+      tr.appendChild(tdName);
+
+      var tdPlaca = document.createElement('td');
+      tdPlaca.className = 'placa-cell';
+      var placaInput = document.createElement('input');
+      placaInput.type = 'text';
+      placaInput.value = lot.placa;
+      placaInput.addEventListener('input', function(){ lot.placa = placaInput.value; saveLocal(); });
+      tdPlaca.appendChild(placaInput);
+      tr.appendChild(tdPlaca);
+
+      var tdAmparo = document.createElement('td');
+      tdAmparo.appendChild(makeSelect(AMPAROS, lot.amparo, function(v){ lot.amparo = v; update(); saveLocal(); }));
+      tr.appendChild(tdAmparo);
+
+      var tdPrioridad = document.createElement('td');
+      tdPrioridad.appendChild(makeSelect(PRIORIDADES.map(function(p){return {key:p.key,label:p.label.replace('Prioridad ','')};}), lot.prioridad, function(v){
+        lot.prioridad = v; renderScopeChips(); update(); saveLocal();
+      }));
+      tr.appendChild(tdPrioridad);
+
+      var tdVmv = document.createElement('td');
+      var vmvInput = document.createElement('input');
+      vmvInput.type = 'number'; vmvInput.min = 0; vmvInput.step = 500000;
+      vmvInput.value = lot.vmv;
+      vmvInput.addEventListener('input', function(){ lot.vmv = Number(vmvInput.value)||0; update(); saveLocal(); });
+      tdVmv.appendChild(vmvInput);
+      tr.appendChild(tdVmv);
+
+      var tdProb = document.createElement('td');
+      var probInput = document.createElement('input');
+      probInput.type = 'number'; probInput.min = 0; probInput.max = 100; probInput.step = 5;
+      probInput.value = lot.probAdj;
+      probInput.addEventListener('input', function(){ lot.probAdj = Number(probInput.value)||0; update(); saveLocal(); });
+      tdProb.appendChild(probInput);
+      tr.appendChild(tdProb);
+
+      var tdRemove = document.createElement('td');
+      var btnRemove = document.createElement('button');
+      btnRemove.className = 'row-remove';
+      btnRemove.type = 'button';
+      btnRemove.title = 'Quitar lote';
+      btnRemove.textContent = '✕';
+      btnRemove.addEventListener('click', function(){
+        state.lotes = state.lotes.filter(function(l){ return l.id !== lot.id; });
+        state.isExample = false;
+        renderRows();
+        renderScopeChips();
+        update();
+        saveLocal();
+      });
+      tdRemove.appendChild(btnRemove);
+      tr.appendChild(tdRemove);
+
+      rowsBody.appendChild(tr);
+    });
+    tablaHint.textContent = state.isExample
+      ? 'Inventario Conceptos21 — subasta presencial 18 sep 2026 (edítalo o reemplázalo para otra subasta)'
+      : (state.lotes.length ? '' : 'No hay lotes todavía — agrega el primero');
+  }
+
+  document.getElementById('btn-add-row').addEventListener('click', function(){
+    state.lotes.push({id:uid(), nombre:'Nuevo lote', placa:'', amparo:'usada', prioridad:'medio', vmv:0, probAdj:50});
+    state.isExample = false;
+    renderRows();
+    renderScopeChips();
+    update();
+    saveLocal();
+  });
+  document.getElementById('btn-reset-example').addEventListener('click', function(){
+    seedExample();
+    renderPaso1();
+    renderPaso2();
+    renderRows();
+    renderScopeChips();
+    update();
+    saveLocal();
+  });
+
+  // ---------- rendering: scenario summary + chart ----------
+  var scenarioGrid = document.getElementById('scenario-grid');
+  var chartWrap = document.getElementById('chart-wrap');
+
+  function renderSummary(results){
+    scenarioGrid.innerHTML = '';
+    state.salaPresets.forEach(function(row){
+      var t = results[row.key];
+      var card = document.createElement('div');
+      card.className = 'scenario-card' + (row.key === 'base' ? ' is-base' : '');
+      card.innerHTML =
+        '<div class="scenario-label">' + row.icon + ' ' + row.label + '</div>' +
+        '<div class="scenario-sub">' + t.lotesIncluidos + ' de ' + t.lotesTotal + ' lotes incluidos</div>' +
+        '<div class="scenario-net num' + (t.utilidadNeta < 0 ? ' negative' : '') + '">' + fmtCOP.format(t.utilidadNeta) + '</div>' +
+        '<div class="scenario-lines">' +
+          '<div class="line"><span>Venta esperada</span><span>' + fmtCOP.format(t.venta) + '</span></div>' +
+          '<div class="line"><span>Superávit bruto</span><span>' + fmtCOP.format(t.superavit) + '</span></div>' +
+          '<div class="line"><span>Comisión SYC (' + state.comisionPct + '%)</span><span>' + fmtCOP.format(t.comision) + '</span></div>' +
+          '<div class="line"><span>Superávit SYC (' + state.superavitPct + '%)</span><span>' + fmtCOP.format(t.superavitSYC) + '</span></div>' +
+          '<div class="line strong"><span>Ingreso bruto SYC</span><span>' + fmtCOP.format(t.ingresoBruto) + '</span></div>' +
+          '<div class="line"><span>− Costo SYC del evento</span><span>' + fmtCOP.format(t.costoSYC) + '</span></div>' +
+          '<div class="line sub"><span>Conceptos21 recibe (est.)</span><span>' + fmtCOP.format(t.conceptos21) + '</span></div>' +
+        '</div>';
+      scenarioGrid.appendChild(card);
+    });
+  }
+
+  function renderChart(results){
+    var keys = state.salaPresets.map(function(r){ return r.key; });
+    var vals = keys.map(function(k){ return results[k].utilidadNeta; });
+    var maxPos = Math.max(0, vals[0], vals[1], vals[2], vals[3]);
+    var minNeg = Math.min(0, vals[0], vals[1], vals[2], vals[3]);
+    var range = (maxPos - minNeg) || 1;
+    var chartH = 130;
+    var baselineFromBottom = ((0 - minNeg) / range) * chartH;
+
+    chartWrap.innerHTML = '';
+    state.salaPresets.forEach(function(row, i){
+      var v = vals[i];
+      var barH = Math.abs(v) / range * chartH;
+      var col = document.createElement('div');
+      col.className = 'chart-col';
+
+      var track = document.createElement('div');
+      track.className = 'chart-bar-track';
+      track.style.height = chartH + 'px';
+
+      var bar = document.createElement('div');
+      bar.className = 'chart-bar' + (v < 0 ? ' negative' : '');
+      bar.style.height = Math.max(barH, 2) + 'px';
+      if(v >= 0){
+        bar.style.marginBottom = baselineFromBottom + 'px';
+      } else {
+        bar.style.marginBottom = (baselineFromBottom - barH) + 'px';
+      }
+
+      var value = document.createElement('div');
+      value.className = 'chart-value num';
+      value.textContent = fmtCOP.format(v);
+
+      track.appendChild(bar);
+      col.appendChild(value);
+      col.appendChild(track);
+      var name = document.createElement('div');
+      name.className = 'chart-name';
+      name.textContent = row.icon + ' ' + row.label;
+      col.appendChild(name);
+      chartWrap.appendChild(col);
+    });
+  }
+
+  function update(){
+    var results = calcAllSala(state.lotes, state);
+    renderSummary(results);
+    renderChart(results);
+  }
+
+  // ---------- init builder ----------
+  if(!loadLocal()){
+    seedExample();
+  }
+  renderPaso1();
+  renderPaso2();
+  renderRows();
+  renderScopeChips();
+  update();
+
+  // ---------- shared scenarios (db capability) ----------
+  var dbStatus = document.getElementById('db-status');
+  var scenarioList = document.getElementById('scenario-list');
+  var btnSave = document.getElementById('btn-save');
+  var svNombre = document.getElementById('sv-nombre');
+  var svAutor = document.getElementById('sv-autor');
+  var savedScenarios = [];
+  var POLL_MS = 15000;
+
+  try{
+    var savedAutor = localStorage.getItem('syc-comision-autor');
+    if(savedAutor) svAutor.value = savedAutor;
+  }catch(e){}
+
+  function snapshotState(){
+    return {
+      comisionPct: state.comisionPct,
+      superavitPct: state.superavitPct,
+      costoEvento: state.costoEvento,
+      costoSYCPct: state.costoSYCPct,
+      effRecup: state.effRecup,
+      salaPresets: state.salaPresets,
+      prioridadesIncluidas: state.prioridadesIncluidas,
+      lotes: state.lotes
+    };
+  }
+
+  function computeSavedResult(doc){
+    var s = {
+      comisionPct: doc.comisionPct, superavitPct: doc.superavitPct,
+      costoEvento: doc.costoEvento, costoSYCPct: doc.costoSYCPct,
+      effRecup: doc.effRecup, prioridadesIncluidas: doc.prioridadesIncluidas || {alto:true,medio:true,bajo:true}
+    };
+    var baseRow = (doc.salaPresets || SALA_PRESETS).filter(function(r){ return r.key === 'base'; })[0] || SALA_PRESETS[0];
+    return calcScenario(doc.lotes || [], baseRow, s);
+  }
+
+  function renderScenarioList(){
+    if(!savedScenarios.length){
+      scenarioList.innerHTML = '<p class="empty-state">Aún no hay escenarios guardados por el equipo. Guarda el primero arriba.</p>';
+      return;
+    }
+    var ranked = savedScenarios.map(function(doc){
+      return {doc:doc, result: computeSavedResult(doc)};
+    }).sort(function(a,b){ return b.result.utilidadNeta - a.result.utilidadNeta; });
+
+    scenarioList.innerHTML = '';
+    ranked.forEach(function(entry, idx){
+      var row = document.createElement('div');
+      row.className = 'saved-row' + (idx === 0 ? ' is-top' : '');
+      row.innerHTML =
+        '<div class="saved-main">' +
+          '<div class="saved-name">' + escapeHtml(entry.doc.nombre || 'Sin nombre') +
+            (idx === 0 ? '<span class="badge">Mejor opción actual</span>' : '') +
+          '</div>' +
+          '<div class="saved-meta">' + escapeHtml(entry.doc.autor || 'Anónimo') + ' · ' + fmtDate(entry.doc.createdAt) +
+            ' · ' + (entry.doc.comisionPct != null ? entry.doc.comisionPct + '% com. + ' + entry.doc.superavitPct + '% sup.' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="saved-figures">' +
+          '<div><span class="fv num">' + fmtCOP.format(entry.result.ingresoBruto) + '</span><span class="fl">Ingreso bruto</span></div>' +
+          '<div><span class="fv num">' + fmtCOP.format(entry.result.utilidadNeta) + '</span><span class="fl">Utilidad neta (base)</span></div>' +
+          '<div><span class="fv num">' + entry.result.lotesIncluidos + '</span><span class="fl">Lotes</span></div>' +
+        '</div>' +
+        '<div class="saved-actions">' +
+          '<button class="btn btn-ghost" type="button" data-action="load">Cargar</button>' +
+          '<button class="btn btn-ghost" type="button" data-action="delete">Eliminar</button>' +
+        '</div>';
+
+      row.querySelector('[data-action="load"]').addEventListener('click', function(){
+        state.comisionPct = entry.doc.comisionPct;
+        state.superavitPct = entry.doc.superavitPct;
+        state.costoEvento = entry.doc.costoEvento;
+        state.costoSYCPct = entry.doc.costoSYCPct;
+        state.effRecup = entry.doc.effRecup;
+        state.salaPresets = (entry.doc.salaPresets || SALA_PRESETS).map(function(r){ return Object.assign({}, r); });
+        state.prioridadesIncluidas = Object.assign({alto:true,medio:true,bajo:true}, entry.doc.prioridadesIncluidas);
+        state.lotes = (entry.doc.lotes || []).map(function(l){ return Object.assign({}, l, {id: uid()}); });
+        state.isExample = false;
+        renderPaso1();
+        renderPaso2();
+        renderRows();
+        renderScopeChips();
+        update();
+        saveLocal();
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+
+      var delBtn = row.querySelector('[data-action="delete"]');
+      delBtn.addEventListener('click', function onFirstClick(){
+        delBtn.textContent = 'Confirmar eliminar';
+        delBtn.className = 'btn btn-danger-confirm';
+        delBtn.removeEventListener('click', onFirstClick);
+        var timeout = setTimeout(function(){
+          delBtn.textContent = 'Eliminar';
+          delBtn.className = 'btn btn-ghost';
+          delBtn.addEventListener('click', onFirstClick);
+        }, 4000);
+        delBtn.addEventListener('click', function onConfirm(){
+          clearTimeout(timeout);
+          fetch('/api/scenarios/' + encodeURIComponent(entry.doc.id), {method:'DELETE'})
+            .then(refreshScenarios)
+            .catch(function(){});
+        }, {once:true});
+      });
+
+      scenarioList.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function enableSaveUi(enabled, msg){
+    btnSave.disabled = !enabled;
+    if(msg){
+      dbStatus.textContent = msg;
+      dbStatus.className = 'status-note' + (enabled ? '' : ' warn');
+    }
+  }
+
+  function refreshScenarios(){
+    return fetch('/api/scenarios')
+      .then(function(r){ if(!r.ok) throw new Error('bad status'); return r.json(); })
+      .then(function(data){
+        savedScenarios = data;
+        renderScenarioList();
+        enableSaveUi(true, 'Guardado compartido activo — visible para todo el equipo.');
+      })
+      .catch(function(){
+        enableSaveUi(false, 'No se pudo conectar con el guardado compartido. Reintentando…');
+      });
+  }
+
+  btnSave.addEventListener('click', function(){
+    var nombre = svNombre.value.trim();
+    var autor = svAutor.value.trim();
+    if(!nombre || !autor){
+      dbStatus.textContent = 'Escribe un nombre de escenario y tu nombre antes de guardar.';
+      dbStatus.className = 'status-note warn';
+      return;
+    }
+    try{ localStorage.setItem('syc-comision-autor', autor); }catch(e){}
+    btnSave.disabled = true;
+    btnSave.textContent = 'Guardando…';
+    var payload = Object.assign({
+      nombre: nombre,
+      autor: autor
+    }, snapshotState());
+    fetch('/api/scenarios', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    }).then(function(r){
+      if(!r.ok) throw new Error('bad status');
+      return r.json();
+    }).then(function(){
+      svNombre.value = '';
+      dbStatus.textContent = 'Escenario guardado. Ya lo pueden ver los demás.';
+      dbStatus.className = 'status-note';
+      return refreshScenarios();
+    }).catch(function(){
+      dbStatus.textContent = 'No se pudo guardar. Intenta de nuevo en un momento.';
+      dbStatus.className = 'status-note warn';
+    }).finally(function(){
+      btnSave.disabled = false;
+      btnSave.textContent = 'Guardar escenario';
+    });
+  });
+
+  scenarioList.innerHTML = '<p class="empty-state">Cargando escenarios guardados…</p>';
+  refreshScenarios();
+  setInterval(refreshScenarios, POLL_MS);
+
+})();
+</script>
+</body>
+</html>
