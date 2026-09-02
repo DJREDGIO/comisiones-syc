@@ -174,6 +174,38 @@
     gap:14px;
   }
 
+  /* --- selector de modo --- */
+  .mode-toggle{display:flex;gap:10px;flex-wrap:wrap}
+  .mode-btn{
+    flex:1;min-width:220px;
+    display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+    text-align:left;
+    border:1.5px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+    padding:13px 16px;
+    border-radius:10px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .mode-btn strong{font-size:14.5px;font-weight:700}
+  .mode-btn span{font-size:12px;color:var(--text-muted);font-weight:400}
+  .mode-btn.active{border-color:var(--accent);background:var(--accent-soft)}
+  .mode-btn.active strong{color:var(--accent-strong)}
+  .quick-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .quick-table th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--text-muted);font-weight:700;padding:0 8px 8px;
+  }
+  .quick-table td{padding:5px 8px}
+  .quick-table td.sala-name{font-size:13.5px;font-weight:600;white-space:nowrap;padding-top:9px}
+  .quick-table input{max-width:130px}
+
   /* --- paso 2: efectividad por calor de sala --- */
   .sala-table{width:100%;border-collapse:collapse}
   .sala-table th{
@@ -426,6 +458,26 @@
     <div class="card-head">
       <div>
         <p class="eyebrow">Paso 2</p>
+        <h2>¿Cómo quieres proyectar?</h2>
+      </div>
+      <span class="hint">Elige detallado si ya tienes el inventario lote por lote, o rápido si solo tienes el valor total esperado del negocio</span>
+    </div>
+    <div class="mode-toggle" id="mode-toggle">
+      <button class="mode-btn" data-mode="detallado" type="button">
+        <strong>📋 Detallado — por lotes</strong>
+        <span>Cargas cada vehículo/lote con su VMV, amparo y probabilidad</span>
+      </button>
+      <button class="mode-btn" data-mode="rapido" type="button">
+        <strong>⚡ Rápido — proyección general</strong>
+        <span>Solo el valor total esperado del negocio, sin inventario</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="card" id="card-detallado-sala">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 3</p>
         <h2>Efectividad esperada sobre el VMV, por calor de sala</h2>
       </div>
       <span class="hint">% del Valor Mínimo de Venta que se espera cerrar cada tipo de lote</span>
@@ -445,10 +497,10 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="card-detallado-lotes">
     <div class="card-head">
       <div>
-        <p class="eyebrow">Paso 3</p>
+        <p class="eyebrow">Paso 4</p>
         <h2>Lotes de la subasta</h2>
       </div>
       <span class="hint" id="tabla-hint">Inventario Conceptos21 — subasta presencial 18 sep 2026</span>
@@ -479,11 +531,39 @@
     </div>
   </section>
 
+  <section class="card" id="card-rapido" style="display:none">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Paso 3</p>
+        <h2>Proyección general del negocio</h2>
+      </div>
+      <span class="hint">Sin inventario: usa el valor total esperado del negocio y una efectividad global por escenario</span>
+    </div>
+    <div class="quick-grid">
+      <div>
+        <label for="in-quick-valor">Valor total esperado del negocio — VMV total (COP)</label>
+        <input type="number" id="in-quick-valor" min="0" step="1000000">
+      </div>
+      <div>
+        <label for="in-quick-prob">% Probabilidad de adjudicación / cierre global</label>
+        <input type="number" id="in-quick-prob" min="0" max="100" step="5">
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="quick-table">
+        <thead>
+          <tr><th>Escenario</th><th>Efectividad esperada sobre el VMV total (%)</th></tr>
+        </thead>
+        <tbody id="quick-body"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="card">
     <div class="card-head">
       <div>
         <p class="eyebrow">Resultado</p>
-        <h2>Comparación por calor de sala</h2>
+        <h2 id="resultado-titulo">Comparación por calor de sala</h2>
       </div>
       <span class="hint">Venta esperada × comisión, más superávit × participación SYC, menos el costo del evento</span>
     </div>
@@ -494,7 +574,7 @@
   <section class="card">
     <div class="card-head">
       <div>
-        <p class="eyebrow">Paso 4</p>
+        <p class="eyebrow">Paso 5</p>
         <h2>Guardar y comparar escenarios con el equipo</h2>
       </div>
       <span class="hint">Visible para cualquier persona de SYC que abra este enlace</span>
@@ -546,6 +626,12 @@
     {key:'medio', label:'Prioridad media'},
     {key:'bajo', label:'Prioridad baja'}
   ];
+  var QUICK_PRESETS = [
+    {key:'conservador', label:'Conservador', icon:'🐢', eff:95},
+    {key:'esperado', label:'Esperado', icon:'⚖️', eff:105},
+    {key:'bueno', label:'Bueno', icon:'📈', eff:112},
+    {key:'excelente', label:'Excelente', icon:'🚀', eff:120}
+  ];
   var AMPAROS = [
     {key:'usada', label:'Usada / Usado'},
     {key:'salvrecup', label:'Salvamento Recuperado'},
@@ -587,6 +673,7 @@
   });
 
   var state = {
+    mode: 'detallado', // 'detallado' | 'rapido'
     comisionPct: 3,
     superavitPct: 50,
     costoEvento: 30000000,
@@ -595,7 +682,10 @@
     salaPresets: SALA_PRESETS.map(function(s){ return Object.assign({}, s); }),
     prioridadesIncluidas: {alto:true, medio:true, bajo:true},
     lotes: [],
-    isExample: true
+    isExample: true,
+    quickValorTotal: 1500000000,
+    quickProbAdj: 60,
+    quickPresets: QUICK_PRESETS.map(function(s){ return Object.assign({}, s); })
   };
 
   // ---------- persistence (per-viewer convenience only) ----------
@@ -605,7 +695,7 @@
       var raw = localStorage.getItem(LS_KEY);
       if(!raw) return false;
       var parsed = JSON.parse(raw);
-      if(parsed && Array.isArray(parsed.lotes) && parsed.lotes.length){
+      if(parsed && (Array.isArray(parsed.lotes) || parsed.mode === 'rapido')){
         Object.assign(state, parsed);
         state.isExample = false;
         return true;
@@ -616,15 +706,19 @@
   function saveLocal(){
     try{
       localStorage.setItem(LS_KEY, JSON.stringify({
+        mode: state.mode,
         comisionPct: state.comisionPct, superavitPct: state.superavitPct,
         costoEvento: state.costoEvento, costoSYCPct: state.costoSYCPct,
         effRecup: state.effRecup, salaPresets: state.salaPresets,
-        prioridadesIncluidas: state.prioridadesIncluidas, lotes: state.lotes
+        prioridadesIncluidas: state.prioridadesIncluidas, lotes: state.lotes,
+        quickValorTotal: state.quickValorTotal, quickProbAdj: state.quickProbAdj,
+        quickPresets: state.quickPresets
       }));
     }catch(e){}
   }
 
   function seedExample(){
+    state.mode = 'detallado';
     state.comisionPct = 3;
     state.superavitPct = 50;
     state.costoEvento = 30000000;
@@ -634,6 +728,9 @@
     state.prioridadesIncluidas = {alto:true, medio:true, bajo:true};
     state.lotes = EXAMPLE_LOTES.map(function(l){ return Object.assign({}, l, {id: uid()}); });
     state.isExample = true;
+    state.quickValorTotal = 1500000000;
+    state.quickProbAdj = 60;
+    state.quickPresets = QUICK_PRESETS.map(function(s){ return Object.assign({}, s); });
   }
 
   // ---------- calculations ----------
@@ -682,6 +779,36 @@
     return out;
   }
 
+  // ---------- modo rápido: proyección general sin inventario lote a lote ----------
+  function calcQuickScenario(effPct, s){
+    var vmv = Number(s.quickValorTotal) || 0;
+    var prob = (Number(s.quickProbAdj) || 0) / 100;
+    var effRatio = (Number(effPct) || 0) / 100;
+    var venta = vmv * effRatio * prob;
+    var superavit = Math.max(0, vmv * (effRatio - 1)) * prob;
+    var comision = venta * (Number(s.comisionPct)||0) / 100;
+    var superavitSYC = superavit * (Number(s.superavitPct)||0) / 100;
+    var ingresoBruto = comision + superavitSYC;
+    var costoSYC = (Number(s.costoEvento)||0) * (Number(s.costoSYCPct)||0) / 100;
+    var utilidadNeta = ingresoBruto - costoSYC;
+    var conceptos21 = venta - ingresoBruto;
+    return {
+      lotesIncluidos: null, lotesTotal: null,
+      venta:venta, superavit:superavit, comision:comision, superavitSYC:superavitSYC,
+      ingresoBruto:ingresoBruto, costoSYC:costoSYC, utilidadNeta:utilidadNeta, conceptos21:conceptos21
+    };
+  }
+
+  function calcAllQuick(s){
+    var out = {};
+    s.quickPresets.forEach(function(row){ out[row.key] = calcQuickScenario(row.eff, s); });
+    return out;
+  }
+
+  function activePresets(s){
+    return s.mode === 'rapido' ? s.quickPresets : s.salaPresets;
+  }
+
   // ---------- Paso 1: estructura comercial ----------
   var inComision = document.getElementById('in-comision');
   var inSuperavit = document.getElementById('in-superavit');
@@ -699,7 +826,73 @@
   inCostoEvento.addEventListener('input', function(){ state.costoEvento = Number(inCostoEvento.value)||0; update(); saveLocal(); });
   inCostoPct.addEventListener('input', function(){ state.costoSYCPct = Number(inCostoPct.value)||0; update(); saveLocal(); });
 
-  // ---------- Paso 2: efectividad por calor de sala ----------
+  // ---------- Paso 2: modo de proyección ----------
+  var modeToggle = document.getElementById('mode-toggle');
+  var cardDetalladoSala = document.getElementById('card-detallado-sala');
+  var cardDetalladoLotes = document.getElementById('card-detallado-lotes');
+  var cardRapido = document.getElementById('card-rapido');
+  var resultadoTitulo = document.getElementById('resultado-titulo');
+
+  function renderModeToggle(){
+    var btns = modeToggle.querySelectorAll('.mode-btn');
+    for(var i=0;i<btns.length;i++){
+      var b = btns[i];
+      b.className = 'mode-btn' + (b.getAttribute('data-mode') === state.mode ? ' active' : '');
+    }
+    var isRapido = state.mode === 'rapido';
+    cardDetalladoSala.style.display = isRapido ? 'none' : '';
+    cardDetalladoLotes.style.display = isRapido ? 'none' : '';
+    cardRapido.style.display = isRapido ? '' : 'none';
+    resultadoTitulo.textContent = isRapido
+      ? 'Proyección general — sin inventario detallado'
+      : 'Comparación por calor de sala';
+  }
+  modeToggle.addEventListener('click', function(e){
+    var btn = e.target.closest ? e.target.closest('.mode-btn') : null;
+    if(!btn) return;
+    state.mode = btn.getAttribute('data-mode');
+    renderModeToggle();
+    update();
+    saveLocal();
+  });
+
+  // ---------- Paso 3 (rápido): proyección general ----------
+  var inQuickValor = document.getElementById('in-quick-valor');
+  var inQuickProb = document.getElementById('in-quick-prob');
+  var quickBody = document.getElementById('quick-body');
+
+  function renderQuickTable(){
+    quickBody.innerHTML = '';
+    state.quickPresets.forEach(function(row){
+      var tr = document.createElement('tr');
+      var tdName = document.createElement('td');
+      tdName.className = 'sala-name';
+      tdName.innerHTML = '<span class="sala-icon">' + row.icon + '</span>' + row.label;
+      tr.appendChild(tdName);
+
+      var td = document.createElement('td');
+      var input = document.createElement('input');
+      input.type = 'number'; input.min = 0; input.step = 1;
+      input.value = row.eff;
+      input.addEventListener('input', function(){
+        row.eff = Number(input.value) || 0;
+        update();
+        saveLocal();
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+      quickBody.appendChild(tr);
+    });
+  }
+  function renderPasoRapido(){
+    inQuickValor.value = state.quickValorTotal;
+    inQuickProb.value = state.quickProbAdj;
+    renderQuickTable();
+  }
+  inQuickValor.addEventListener('input', function(){ state.quickValorTotal = Number(inQuickValor.value)||0; update(); saveLocal(); });
+  inQuickProb.addEventListener('input', function(){ state.quickProbAdj = Number(inQuickProb.value)||0; update(); saveLocal(); });
+
+  // ---------- Paso 3/4 (detallado): efectividad por calor de sala ----------
   var salaBody = document.getElementById('sala-body');
   var inEffRecup = document.getElementById('in-effrecup');
 
@@ -860,6 +1053,8 @@
   document.getElementById('btn-reset-example').addEventListener('click', function(){
     seedExample();
     renderPaso1();
+    renderModeToggle();
+    renderPasoRapido();
     renderPaso2();
     renderRows();
     renderScopeChips();
@@ -873,13 +1068,18 @@
 
   function renderSummary(results){
     scenarioGrid.innerHTML = '';
-    state.salaPresets.forEach(function(row){
+    var presets = activePresets(state);
+    var destacado = state.mode === 'rapido' ? 'esperado' : 'base';
+    presets.forEach(function(row){
       var t = results[row.key];
       var card = document.createElement('div');
-      card.className = 'scenario-card' + (row.key === 'base' ? ' is-base' : '');
+      card.className = 'scenario-card' + (row.key === destacado ? ' is-base' : '');
+      var subLine = t.lotesIncluidos != null
+        ? (t.lotesIncluidos + ' de ' + t.lotesTotal + ' lotes incluidos')
+        : ('Efectividad ' + row.eff + '% sobre VMV total');
       card.innerHTML =
         '<div class="scenario-label">' + row.icon + ' ' + row.label + '</div>' +
-        '<div class="scenario-sub">' + t.lotesIncluidos + ' de ' + t.lotesTotal + ' lotes incluidos</div>' +
+        '<div class="scenario-sub">' + subLine + '</div>' +
         '<div class="scenario-net num' + (t.utilidadNeta < 0 ? ' negative' : '') + '">' + fmtCOP.format(t.utilidadNeta) + '</div>' +
         '<div class="scenario-lines">' +
           '<div class="line"><span>Venta esperada</span><span>' + fmtCOP.format(t.venta) + '</span></div>' +
@@ -895,7 +1095,8 @@
   }
 
   function renderChart(results){
-    var keys = state.salaPresets.map(function(r){ return r.key; });
+    var presets = activePresets(state);
+    var keys = presets.map(function(r){ return r.key; });
     var vals = keys.map(function(k){ return results[k].utilidadNeta; });
     var maxPos = Math.max(0, vals[0], vals[1], vals[2], vals[3]);
     var minNeg = Math.min(0, vals[0], vals[1], vals[2], vals[3]);
@@ -904,7 +1105,7 @@
     var baselineFromBottom = ((0 - minNeg) / range) * chartH;
 
     chartWrap.innerHTML = '';
-    state.salaPresets.forEach(function(row, i){
+    presets.forEach(function(row, i){
       var v = vals[i];
       var barH = Math.abs(v) / range * chartH;
       var col = document.createElement('div');
@@ -939,7 +1140,7 @@
   }
 
   function update(){
-    var results = calcAllSala(state.lotes, state);
+    var results = state.mode === 'rapido' ? calcAllQuick(state) : calcAllSala(state.lotes, state);
     renderSummary(results);
     renderChart(results);
   }
@@ -949,6 +1150,8 @@
     seedExample();
   }
   renderPaso1();
+  renderModeToggle();
+  renderPasoRapido();
   renderPaso2();
   renderRows();
   renderScopeChips();
@@ -970,6 +1173,7 @@
 
   function snapshotState(){
     return {
+      mode: state.mode,
       comisionPct: state.comisionPct,
       superavitPct: state.superavitPct,
       costoEvento: state.costoEvento,
@@ -977,11 +1181,23 @@
       effRecup: state.effRecup,
       salaPresets: state.salaPresets,
       prioridadesIncluidas: state.prioridadesIncluidas,
-      lotes: state.lotes
+      lotes: state.lotes,
+      quickValorTotal: state.quickValorTotal,
+      quickProbAdj: state.quickProbAdj,
+      quickPresets: state.quickPresets
     };
   }
 
   function computeSavedResult(doc){
+    if(doc.mode === 'rapido'){
+      var qs = {
+        comisionPct: doc.comisionPct, superavitPct: doc.superavitPct,
+        costoEvento: doc.costoEvento, costoSYCPct: doc.costoSYCPct,
+        quickValorTotal: doc.quickValorTotal, quickProbAdj: doc.quickProbAdj
+      };
+      var qRow = (doc.quickPresets || QUICK_PRESETS).filter(function(r){ return r.key === 'esperado'; })[0] || QUICK_PRESETS[1];
+      return calcQuickScenario(qRow.eff, qs);
+    }
     var s = {
       comisionPct: doc.comisionPct, superavitPct: doc.superavitPct,
       costoEvento: doc.costoEvento, costoSYCPct: doc.costoSYCPct,
@@ -1002,12 +1218,14 @@
 
     scenarioList.innerHTML = '';
     ranked.forEach(function(entry, idx){
+      var isRapido = entry.doc.mode === 'rapido';
       var row = document.createElement('div');
       row.className = 'saved-row' + (idx === 0 ? ' is-top' : '');
       row.innerHTML =
         '<div class="saved-main">' +
           '<div class="saved-name">' + escapeHtml(entry.doc.nombre || 'Sin nombre') +
             (idx === 0 ? '<span class="badge">Mejor opción actual</span>' : '') +
+            (isRapido ? '<span class="badge" style="background:var(--accent-strong)">Proyección rápida</span>' : '') +
           '</div>' +
           '<div class="saved-meta">' + escapeHtml(entry.doc.autor || 'Anónimo') + ' · ' + fmtDate(entry.doc.createdAt) +
             ' · ' + (entry.doc.comisionPct != null ? entry.doc.comisionPct + '% com. + ' + entry.doc.superavitPct + '% sup.' : '') +
@@ -1015,8 +1233,8 @@
         '</div>' +
         '<div class="saved-figures">' +
           '<div><span class="fv num">' + fmtCOP.format(entry.result.ingresoBruto) + '</span><span class="fl">Ingreso bruto</span></div>' +
-          '<div><span class="fv num">' + fmtCOP.format(entry.result.utilidadNeta) + '</span><span class="fl">Utilidad neta (base)</span></div>' +
-          '<div><span class="fv num">' + entry.result.lotesIncluidos + '</span><span class="fl">Lotes</span></div>' +
+          '<div><span class="fv num">' + fmtCOP.format(entry.result.utilidadNeta) + '</span><span class="fl">Utilidad neta (esc. base)</span></div>' +
+          '<div><span class="fv num">' + (isRapido ? fmtCOP.format(entry.doc.quickValorTotal || 0) : entry.result.lotesIncluidos) + '</span><span class="fl">' + (isRapido ? 'Valor total negocio' : 'Lotes') + '</span></div>' +
         '</div>' +
         '<div class="saved-actions">' +
           '<button class="btn btn-ghost" type="button" data-action="load">Cargar</button>' +
@@ -1024,6 +1242,7 @@
         '</div>';
 
       row.querySelector('[data-action="load"]').addEventListener('click', function(){
+        state.mode = entry.doc.mode === 'rapido' ? 'rapido' : 'detallado';
         state.comisionPct = entry.doc.comisionPct;
         state.superavitPct = entry.doc.superavitPct;
         state.costoEvento = entry.doc.costoEvento;
@@ -1032,8 +1251,13 @@
         state.salaPresets = (entry.doc.salaPresets || SALA_PRESETS).map(function(r){ return Object.assign({}, r); });
         state.prioridadesIncluidas = Object.assign({alto:true,medio:true,bajo:true}, entry.doc.prioridadesIncluidas);
         state.lotes = (entry.doc.lotes || []).map(function(l){ return Object.assign({}, l, {id: uid()}); });
+        state.quickValorTotal = entry.doc.quickValorTotal != null ? entry.doc.quickValorTotal : state.quickValorTotal;
+        state.quickProbAdj = entry.doc.quickProbAdj != null ? entry.doc.quickProbAdj : state.quickProbAdj;
+        state.quickPresets = (entry.doc.quickPresets || QUICK_PRESETS).map(function(r){ return Object.assign({}, r); });
         state.isExample = false;
         renderPaso1();
+        renderModeToggle();
+        renderPasoRapido();
         renderPaso2();
         renderRows();
         renderScopeChips();
