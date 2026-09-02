@@ -4,69 +4,71 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proyección de Comisiones — SYC</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Saira:wght@400;500;600;700&display=swap">
 <style>
   :root{
-    --bg:#f2f5f7;
+    --bg:#f8faff;
     --surface:#ffffff;
-    --surface-2:#eef2f5;
-    --row-alt:#f8fafb;
-    --border:#dbe3ea;
-    --text:#16233a;
-    --text-muted:#5b6b80;
-    --header-bg:#162842;
-    --header-text:#eef3f8;
-    --header-sub:#9db3cc;
-    --accent:#00967f;
-    --accent-strong:#007c69;
-    --accent-soft:#e1f5f0;
-    --accent-2:#e0530f;
-    --accent-2-soft:#fde9de;
-    --danger:#c8443c;
-    --danger-soft:#fbe7e5;
-    --focus:#2f7ff5;
-    --shadow:0 1px 2px rgba(22,35,58,.06),0 8px 24px -12px rgba(22,35,58,.18);
+    --surface-2:#f3f7ff;
+    --row-alt:#eef3fc;
+    --border:#e0e7ff;
+    --text:#1a1f3a;
+    --text-muted:#6b7280;
+    --header-bg:#0c0e10;
+    --header-text:#e2e2e5;
+    --header-sub:#88929b;
+    --accent:#0066cc;
+    --accent-strong:#0052a3;
+    --accent-soft:#e5f1fc;
+    --accent-2:#d97706;
+    --accent-2-soft:#fdf1dc;
+    --danger:#dc2626;
+    --danger-soft:#fce8e8;
+    --focus:#0066cc;
+    --shadow:0 1px 2px rgba(10,14,16,.06),0 8px 24px -12px rgba(10,14,16,.18);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#0b1420;
-      --surface:#111e32;
-      --surface-2:#16263e;
-      --row-alt:#0e1a2c;
-      --border:#26395a;
-      --text:#e7edf5;
-      --text-muted:#8fa2ba;
-      --header-bg:#0a1424;
-      --header-text:#eef3f8;
-      --header-sub:#7d93b0;
-      --accent:#22c9a9;
-      --accent-strong:#3fe0c0;
-      --accent-soft:#0f3630;
-      --accent-2:#ff8a4d;
-      --accent-2-soft:#3a2314;
-      --danger:#f0776e;
-      --danger-soft:#3a1a18;
+      --bg:#121416;
+      --surface:#1e2022;
+      --surface-2:#252729;
+      --row-alt:#1a1c1e;
+      --border:#3f4850;
+      --text:#e2e2e5;
+      --text-muted:#bec8d1;
+      --header-bg:#0c0e10;
+      --header-text:#e2e2e5;
+      --header-sub:#88929b;
+      --accent:#0096D6;
+      --accent-strong:#8aceff;
+      --accent-soft:#10293a;
+      --accent-2:#facc15;
+      --accent-2-soft:#3a2f0a;
+      --danger:#ff6b6b;
+      --danger-soft:#3a1817;
+      --focus:#0096D6;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 28px -14px rgba(0,0,0,.6);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#0b1420;
-    --surface:#111e32;
-    --surface-2:#16263e;
-    --row-alt:#0e1a2c;
-    --border:#26395a;
-    --text:#e7edf5;
-    --text-muted:#8fa2ba;
-    --header-bg:#0a1424;
-    --header-text:#eef3f8;
-    --header-sub:#7d93b0;
-    --accent:#22c9a9;
-    --accent-strong:#3fe0c0;
-    --accent-soft:#0f3630;
-    --accent-2:#ff8a4d;
-    --accent-2-soft:#3a2314;
-    --danger:#f0776e;
-    --danger-soft:#3a1a18;
+    --bg:#121416;
+    --surface:#1e2022;
+    --surface-2:#252729;
+    --row-alt:#1a1c1e;
+    --border:#3f4850;
+    --text:#e2e2e5;
+    --text-muted:#bec8d1;
+    --header-bg:#0c0e10;
+    --header-text:#e2e2e5;
+    --header-sub:#88929b;
+    --accent:#0096D6;
+    --accent-strong:#8aceff;
+    --accent-soft:#10293a;
+    --accent-2:#facc15;
+    --accent-2-soft:#3a2f0a;
+    --danger:#ff6b6b;
+    --danger-soft:#3a1817;
+    --focus:#0096D6;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 28px -14px rgba(0,0,0,.6);
   }
 
@@ -75,12 +77,12 @@
     margin:0;
     background:var(--bg);
     color:var(--text);
-    font-family:"Roboto",-apple-system,Segoe UI,sans-serif;
+    font-family:"Saira",-apple-system,Segoe UI,sans-serif;
     font-size:15px;
     line-height:1.45;
   }
   h1,h2,h3{
-    font-family:"Roboto Condensed","Roboto",sans-serif;
+    font-family:"Outfit","Saira",sans-serif;
     text-wrap:balance;
     margin:0;
   }
@@ -99,8 +101,8 @@
   .brand-mark{
     width:40px;height:40px;border-radius:9px;
     background:var(--accent);
-    color:#06251f;
-    font-family:"Roboto Condensed",sans-serif;
+    color:#0a0e27;
+    font-family:"Outfit",sans-serif;
     font-weight:700;
     font-size:15px;
     display:flex;align-items:center;justify-content:center;
@@ -285,7 +287,7 @@
   .btn-primary{
     background:var(--accent);
     border-color:var(--accent);
-    color:#06251f;
+    color:#0a0e27;
     font-weight:700;
   }
   .btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong)}
@@ -311,7 +313,7 @@
   }
   .scenario-card.is-base{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .scenario-label{
-    font-family:"Roboto Condensed",sans-serif;
+    font-family:"Outfit",sans-serif;
     font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
     color:var(--text-muted);
     display:flex;align-items:center;gap:6px;
@@ -319,7 +321,7 @@
   .scenario-card.is-base .scenario-label{color:var(--accent-strong)}
   .scenario-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
   .scenario-net{
-    font-family:"Roboto Condensed",sans-serif;
+    font-family:"Outfit",sans-serif;
     font-size:clamp(20px,2.6vw,25px);
     font-weight:700;
     margin:8px 0 10px;
