@@ -271,6 +271,10 @@
   .row-remove:hover{color:var(--danger);background:var(--danger-soft)}
 
   .table-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+  .real-case-note{
+    margin-top:12px;padding:12px 14px;border-radius:10px;font-size:12.5px;line-height:1.5;
+    background:var(--accent-2-soft);border:1px solid var(--accent-2);color:var(--text)
+  }
 
   .btn{
     border:1px solid var(--border);
@@ -568,6 +572,18 @@
         <tbody id="quick-body"></tbody>
       </table>
     </div>
+    <div class="table-actions">
+      <button class="btn btn-ghost" id="btn-load-real-case" type="button">📊 Cargar caso real: Subasta SYC2025-0188</button>
+      <button class="btn btn-ghost" id="btn-unload-real-case" type="button" style="display:none">↩️ Volver a mi proyección</button>
+    </div>
+    <div class="real-case-note" id="real-case-note" style="display:none">
+      <strong>Caso real cargado — Subasta presencial SYC2025-0188, solo lotes adjudicados (39 de 60).</strong>
+      Resultado real: Venta $1.768.500.000 y Superávit $69.500.000. El VMV que ves arriba ($1.699.000.000) es un
+      valor <em>equivalente</em> (no el VMV histórico literal): se calculó para que, con este modelo agregado,
+      la Venta y el Superávit salgan exactamente iguales a los reales — porque sumar Venta−VMV a nivel agregado
+      no captura el superávit real (algunos lotes cerraron por debajo de su VMV y otros por encima). Puedes
+      editar la efectividad para explorar variaciones sobre este resultado real.
+    </div>
   </section>
 
   <section class="card">
@@ -675,6 +691,24 @@
     {key:'bueno', label:'Bueno', icon:'📈', eff:112},
     {key:'excelente', label:'Excelente', icon:'🚀', eff:120}
   ];
+
+  // ---------- Caso real: Subasta presencial SYC2025-0188 (solo adjudicados) ----------
+  // Resultado real de la subasta: Venta = $1.768.500.000, Superávit = $69.500.000 (39 lotes adjudicados, prob=100%).
+  // El superávit real NO sale de restar Venta-VMV a nivel agregado (eso da negativo, porque hay lotes que
+  // cerraron por debajo de su VMV y otros por encima; el superávit real solo suma las diferencias positivas
+  // lote a lote). Por eso el VMV que se usa aquí es un valor "nocional" (equivalente), resuelto para que la
+  // fórmula de Modo Rápido reproduzca exactamente la Venta y el Superávit reales — no es el VMV histórico literal.
+  //   notional_VMV = Venta_real - Superavit_real = 1.768.500.000 - 69.500.000 = 1.699.000.000
+  //   notional_efectividad = Venta_real / notional_VMV = 1.768.500.000 / 1.699.000.000 = 104.09%
+  var REAL_CASE_SYC2025_0188 = {
+    quickValorTotal: 1699000000,
+    quickProbAdj: 100,
+    quickPresets: [
+      {key:'real', label:'Real SYC2025-0188 (solo adjudicados)', icon:'📊', eff: 104.090642}
+    ],
+    ventaReal: 1768500000,
+    superavitReal: 69500000
+  };
   var AMPAROS = [
     {key:'usada', label:'Usada / Usado'},
     {key:'salvrecup', label:'Salvamento Recuperado'},
@@ -733,7 +767,8 @@
     isExample: true,
     quickValorTotal: 1500000000,
     quickProbAdj: 60,
-    quickPresets: QUICK_PRESETS.map(function(s){ return Object.assign({}, s); })
+    quickPresets: QUICK_PRESETS.map(function(s){ return Object.assign({}, s); }),
+    realCaseLoaded: false
   };
 
   // ---------- persistence (per-viewer convenience only) ----------
@@ -746,6 +781,7 @@
       if(parsed && (Array.isArray(parsed.lotes) || parsed.mode === 'rapido')){
         Object.assign(state, parsed);
         state.isExample = false;
+        if(parsed.quickBackup) quickBackup = parsed.quickBackup;
         return true;
       }
     }catch(e){}
@@ -761,7 +797,8 @@
         effRecup: state.effRecup, salaPresets: state.salaPresets,
         prioridadesIncluidas: state.prioridadesIncluidas, lotes: state.lotes,
         quickValorTotal: state.quickValorTotal, quickProbAdj: state.quickProbAdj,
-        quickPresets: state.quickPresets
+        quickPresets: state.quickPresets,
+        realCaseLoaded: state.realCaseLoaded, quickBackup: quickBackup
       }));
     }catch(e){}
   }
@@ -785,6 +822,7 @@
     state.quickValorTotal = 1500000000;
     state.quickProbAdj = 60;
     state.quickPresets = QUICK_PRESETS.map(function(s){ return Object.assign({}, s); });
+    state.realCaseLoaded = false;
   }
 
   // ---------- calculations ----------
@@ -986,6 +1024,52 @@
   wireThousands(inQuickValor, function(num){ state.quickValorTotal = num; update(); saveLocal(); });
   inQuickProb.addEventListener('input', function(){ state.quickProbAdj = Number(inQuickProb.value)||0; update(); saveLocal(); });
 
+  // ---------- Caso real SYC2025-0188: cargar / quitar ----------
+  var btnLoadRealCase = document.getElementById('btn-load-real-case');
+  var btnUnloadRealCase = document.getElementById('btn-unload-real-case');
+  var realCaseNote = document.getElementById('real-case-note');
+  var quickBackup = null;
+
+  function renderRealCaseUI(){
+    var loaded = !!state.realCaseLoaded;
+    btnLoadRealCase.style.display = loaded ? 'none' : '';
+    btnUnloadRealCase.style.display = loaded ? '' : 'none';
+    realCaseNote.style.display = loaded ? '' : 'none';
+  }
+  btnLoadRealCase.addEventListener('click', function(){
+    quickBackup = {
+      quickValorTotal: state.quickValorTotal,
+      quickProbAdj: state.quickProbAdj,
+      quickPresets: state.quickPresets.map(function(r){ return Object.assign({}, r); })
+    };
+    state.mode = 'rapido';
+    state.quickValorTotal = REAL_CASE_SYC2025_0188.quickValorTotal;
+    state.quickProbAdj = REAL_CASE_SYC2025_0188.quickProbAdj;
+    state.quickPresets = REAL_CASE_SYC2025_0188.quickPresets.map(function(r){ return Object.assign({}, r); });
+    state.realCaseLoaded = true;
+    renderModeToggle();
+    renderPasoRapido();
+    renderRealCaseUI();
+    update();
+    saveLocal();
+  });
+  btnUnloadRealCase.addEventListener('click', function(){
+    if(quickBackup){
+      state.quickValorTotal = quickBackup.quickValorTotal;
+      state.quickProbAdj = quickBackup.quickProbAdj;
+      state.quickPresets = quickBackup.quickPresets;
+    } else {
+      state.quickValorTotal = 1500000000;
+      state.quickProbAdj = 60;
+      state.quickPresets = QUICK_PRESETS.map(function(s){ return Object.assign({}, s); });
+    }
+    state.realCaseLoaded = false;
+    renderPasoRapido();
+    renderRealCaseUI();
+    update();
+    saveLocal();
+  });
+
   // ---------- Paso 3/4 (detallado): efectividad por calor de sala ----------
   var salaBody = document.getElementById('sala-body');
   var inEffRecup = document.getElementById('in-effrecup');
@@ -1161,6 +1245,7 @@
   });
   document.getElementById('btn-reset-example').addEventListener('click', function(){
     seedExample();
+    quickBackup = null;
     renderPaso1();
     renderEventTypeToggle();
     renderModeToggle();
@@ -1168,6 +1253,7 @@
     renderPaso2();
     renderRows();
     renderScopeChips();
+    renderRealCaseUI();
     update();
     saveLocal();
   });
@@ -1208,8 +1294,8 @@
     var presets = activePresets(state);
     var keys = presets.map(function(r){ return r.key; });
     var vals = keys.map(function(k){ return results[k].utilidadNeta; });
-    var maxPos = Math.max(0, vals[0], vals[1], vals[2], vals[3]);
-    var minNeg = Math.min(0, vals[0], vals[1], vals[2], vals[3]);
+    var maxPos = vals.reduce(function(m,v){ return Math.max(m,v); }, 0);
+    var minNeg = vals.reduce(function(m,v){ return Math.min(m,v); }, 0);
     var range = (maxPos - minNeg) || 1;
     var chartH = 130;
     var baselineFromBottom = ((0 - minNeg) / range) * chartH;
@@ -1266,6 +1352,7 @@
   renderPaso2();
   renderRows();
   renderScopeChips();
+  renderRealCaseUI();
   update();
 
   // ---------- shared scenarios (db capability) ----------
@@ -1379,6 +1466,8 @@
           virtual: {comisionPct: entry.doc.comisionPct, superavitPct: entry.doc.superavitPct, costoEvento: entry.doc.costoEvento, costoSYCPct: entry.doc.costoSYCPct}
         };
         state.isExample = false;
+        state.realCaseLoaded = false;
+        quickBackup = null;
         renderPaso1();
         renderEventTypeToggle();
         renderModeToggle();
@@ -1386,6 +1475,7 @@
         renderPaso2();
         renderRows();
         renderScopeChips();
+        renderRealCaseUI();
         update();
         saveLocal();
         window.scrollTo({top:0, behavior:'smooth'});
