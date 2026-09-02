@@ -428,6 +428,16 @@
       </div>
       <span class="hint">SYC cobra un % sobre la venta esperada, más un % del superávit cuando el lote cierra por encima del VMV</span>
     </div>
+    <div class="mode-toggle" id="event-type-toggle" style="margin-bottom:16px">
+      <button class="mode-btn" data-event-type="presencial" type="button">
+        <strong>🏛️ Subasta Presencial</strong>
+        <span>Evento físico — logística, local, seguridad</span>
+      </button>
+      <button class="mode-btn" data-event-type="virtual" type="button">
+        <strong>💻 Subasta Virtual</strong>
+        <span>Solo plataforma en línea, sin costos de evento físico</span>
+      </button>
+    </div>
     <div class="costos-grid">
       <div>
         <label for="in-comision">% Comisión sobre venta esperada</label>
@@ -668,10 +678,15 @@
 
   var state = {
     mode: 'detallado', // 'detallado' | 'rapido'
+    eventType: 'presencial', // 'presencial' | 'virtual'
     comisionPct: 3,
     superavitPct: 50,
     costoEvento: 30000000,
     costoSYCPct: 50,
+    comercialByType: {
+      presencial: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
+      virtual: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}
+    },
     effRecup: 100,
     salaPresets: SALA_PRESETS.map(function(s){ return Object.assign({}, s); }),
     prioridadesIncluidas: {alto:true, medio:true, bajo:true},
@@ -701,6 +716,7 @@
     try{
       localStorage.setItem(LS_KEY, JSON.stringify({
         mode: state.mode,
+        eventType: state.eventType, comercialByType: state.comercialByType,
         comisionPct: state.comisionPct, superavitPct: state.superavitPct,
         costoEvento: state.costoEvento, costoSYCPct: state.costoSYCPct,
         effRecup: state.effRecup, salaPresets: state.salaPresets,
@@ -713,10 +729,15 @@
 
   function seedExample(){
     state.mode = 'detallado';
+    state.eventType = 'presencial';
     state.comisionPct = 3;
     state.superavitPct = 50;
     state.costoEvento = 30000000;
     state.costoSYCPct = 50;
+    state.comercialByType = {
+      presencial: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50},
+      virtual: {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}
+    };
     state.effRecup = 100;
     state.salaPresets = SALA_PRESETS.map(function(s){ return Object.assign({}, s); });
     state.prioridadesIncluidas = {alto:true, medio:true, bajo:true};
@@ -815,10 +836,43 @@
     inCostoEvento.value = state.costoEvento;
     inCostoPct.value = state.costoSYCPct;
   }
-  inComision.addEventListener('input', function(){ state.comisionPct = Number(inComision.value)||0; update(); saveLocal(); });
-  inSuperavit.addEventListener('input', function(){ state.superavitPct = Number(inSuperavit.value)||0; update(); saveLocal(); });
-  inCostoEvento.addEventListener('input', function(){ state.costoEvento = Number(inCostoEvento.value)||0; update(); saveLocal(); });
-  inCostoPct.addEventListener('input', function(){ state.costoSYCPct = Number(inCostoPct.value)||0; update(); saveLocal(); });
+  function syncComercialByType(){
+    state.comercialByType[state.eventType] = {
+      comisionPct: state.comisionPct, superavitPct: state.superavitPct,
+      costoEvento: state.costoEvento, costoSYCPct: state.costoSYCPct
+    };
+  }
+  inComision.addEventListener('input', function(){ state.comisionPct = Number(inComision.value)||0; syncComercialByType(); update(); saveLocal(); });
+  inSuperavit.addEventListener('input', function(){ state.superavitPct = Number(inSuperavit.value)||0; syncComercialByType(); update(); saveLocal(); });
+  inCostoEvento.addEventListener('input', function(){ state.costoEvento = Number(inCostoEvento.value)||0; syncComercialByType(); update(); saveLocal(); });
+  inCostoPct.addEventListener('input', function(){ state.costoSYCPct = Number(inCostoPct.value)||0; syncComercialByType(); update(); saveLocal(); });
+
+  // ---------- Tipo de evento: Presencial / Virtual ----------
+  var eventTypeToggle = document.getElementById('event-type-toggle');
+  function renderEventTypeToggle(){
+    var btns = eventTypeToggle.querySelectorAll('.mode-btn');
+    for(var i=0;i<btns.length;i++){
+      var b = btns[i];
+      b.className = 'mode-btn' + (b.getAttribute('data-event-type') === state.eventType ? ' active' : '');
+    }
+  }
+  eventTypeToggle.addEventListener('click', function(e){
+    var btn = e.target.closest ? e.target.closest('.mode-btn') : null;
+    if(!btn) return;
+    var type = btn.getAttribute('data-event-type');
+    if(type === state.eventType) return;
+    syncComercialByType();
+    state.eventType = type;
+    var c = state.comercialByType[type] || {comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50};
+    state.comisionPct = c.comisionPct;
+    state.superavitPct = c.superavitPct;
+    state.costoEvento = c.costoEvento;
+    state.costoSYCPct = c.costoSYCPct;
+    renderPaso1();
+    renderEventTypeToggle();
+    update();
+    saveLocal();
+  });
 
   // ---------- Paso 2: modo de proyección ----------
   var modeToggle = document.getElementById('mode-toggle');
@@ -1047,6 +1101,7 @@
   document.getElementById('btn-reset-example').addEventListener('click', function(){
     seedExample();
     renderPaso1();
+    renderEventTypeToggle();
     renderModeToggle();
     renderPasoRapido();
     renderPaso2();
@@ -1144,6 +1199,7 @@
     seedExample();
   }
   renderPaso1();
+  renderEventTypeToggle();
   renderModeToggle();
   renderPasoRapido();
   renderPaso2();
@@ -1168,6 +1224,8 @@
   function snapshotState(){
     return {
       mode: state.mode,
+      eventType: state.eventType,
+      comercialByType: state.comercialByType,
       comisionPct: state.comisionPct,
       superavitPct: state.superavitPct,
       costoEvento: state.costoEvento,
@@ -1213,6 +1271,7 @@
     scenarioList.innerHTML = '';
     ranked.forEach(function(entry, idx){
       var isRapido = entry.doc.mode === 'rapido';
+      var evType = entry.doc.eventType === 'virtual' ? 'virtual' : (entry.doc.eventType === 'presencial' ? 'presencial' : null);
       var row = document.createElement('div');
       row.className = 'saved-row' + (idx === 0 ? ' is-top' : '');
       row.innerHTML =
@@ -1220,6 +1279,8 @@
           '<div class="saved-name">' + escapeHtml(entry.doc.nombre || 'Sin nombre') +
             (idx === 0 ? '<span class="badge">Mejor opción actual</span>' : '') +
             (isRapido ? '<span class="badge" style="background:var(--accent-strong)">Proyección rápida</span>' : '') +
+            (evType === 'virtual' ? '<span class="badge" style="background:var(--accent-2)">💻 Virtual</span>' : '') +
+            (evType === 'presencial' ? '<span class="badge" style="background:var(--text-muted)">🏛️ Presencial</span>' : '') +
           '</div>' +
           '<div class="saved-meta">' + escapeHtml(entry.doc.autor || 'Anónimo') + ' · ' + fmtDate(entry.doc.createdAt) +
             ' · ' + (entry.doc.comisionPct != null ? entry.doc.comisionPct + '% com. + ' + entry.doc.superavitPct + '% sup.' : '') +
@@ -1248,8 +1309,17 @@
         state.quickValorTotal = entry.doc.quickValorTotal != null ? entry.doc.quickValorTotal : state.quickValorTotal;
         state.quickProbAdj = entry.doc.quickProbAdj != null ? entry.doc.quickProbAdj : state.quickProbAdj;
         state.quickPresets = (entry.doc.quickPresets || QUICK_PRESETS).map(function(r){ return Object.assign({}, r); });
+        state.eventType = entry.doc.eventType === 'virtual' ? 'virtual' : 'presencial';
+        state.comercialByType = entry.doc.comercialByType ? {
+          presencial: Object.assign({comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}, entry.doc.comercialByType.presencial),
+          virtual: Object.assign({comisionPct:3, superavitPct:50, costoEvento:30000000, costoSYCPct:50}, entry.doc.comercialByType.virtual)
+        } : {
+          presencial: {comisionPct: entry.doc.comisionPct, superavitPct: entry.doc.superavitPct, costoEvento: entry.doc.costoEvento, costoSYCPct: entry.doc.costoSYCPct},
+          virtual: {comisionPct: entry.doc.comisionPct, superavitPct: entry.doc.superavitPct, costoEvento: entry.doc.costoEvento, costoSYCPct: entry.doc.costoSYCPct}
+        };
         state.isExample = false;
         renderPaso1();
+        renderEventTypeToggle();
         renderModeToggle();
         renderPasoRapido();
         renderPaso2();
