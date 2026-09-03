@@ -276,6 +276,35 @@
     background:var(--accent-2-soft);border:1px solid var(--accent-2);color:var(--text)
   }
 
+  /* --- cuadro de negociación --- */
+  .nego-inputs-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:14px;margin-bottom:16px;
+  }
+  .nego-totals{
+    display:flex;gap:24px;flex-wrap:wrap;margin-bottom:18px;
+    padding:12px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  }
+  .nego-totals .stat{display:flex;flex-direction:column;gap:2px}
+  .nego-totals .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700}
+  .nego-totals .stat .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .nego-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:900px){.nego-grid{grid-template-columns:1fr}}
+  .nego-card{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--surface-2)}
+  .nego-card h3{font-family:"Outfit",sans-serif;font-size:14.5px;font-weight:700;margin:0 0 4px}
+  .nego-card .nego-desc{font-size:11.5px;color:var(--text-muted);margin-bottom:14px;line-height:1.4;min-height:32px}
+  .nego-card .nego-pcts{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .nego-card .nego-pcts > div{flex:1;min-width:88px}
+  .nego-card .nego-pcts label{margin-bottom:4px;font-size:11px}
+  .nego-bar{height:8px;border-radius:100px;overflow:hidden;display:flex;background:var(--border);margin:2px 0 12px}
+  .nego-bar .seg-ev{background:var(--accent)}
+  .nego-bar .seg-syc{background:var(--accent-2)}
+  .nego-split{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid var(--border)}
+  .nego-split .row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;gap:8px}
+  .nego-split .row .lbl{color:var(--text-muted);display:flex;align-items:center;gap:6px}
+  .nego-split .row .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .nego-split .row .val{font-weight:700;font-variant-numeric:tabular-nums}
+
   .btn{
     border:1px solid var(--border);
     background:var(--surface);
@@ -598,6 +627,32 @@
     <div class="chart-wrap" id="chart-wrap"></div>
   </section>
 
+  <section class="card" id="card-nego">
+    <div class="card-head">
+      <div>
+        <p class="eyebrow">Cuadro de negociación</p>
+        <h2>Modelos comerciales para un proyecto nuevo</h2>
+      </div>
+      <span class="hint">Compara 3 estructuras de comisión frente a un cliente nuevo — herramienta de negociación para el KAM</span>
+    </div>
+    <div class="nego-inputs-grid">
+      <div>
+        <label for="in-nego-vme">VME — Valor Mínimo Esperado (COP)</label>
+        <input type="text" inputmode="numeric" id="in-nego-vme">
+      </div>
+      <div>
+        <label for="in-nego-oferta">Valor de oferta — incremento por puja (COP)</label>
+        <input type="text" inputmode="numeric" id="in-nego-oferta">
+      </div>
+      <div>
+        <label for="in-nego-cantidad">Cantidad de ofertas esperadas</label>
+        <input type="number" id="in-nego-cantidad" min="0" step="1">
+      </div>
+    </div>
+    <div class="nego-totals" id="nego-totals"></div>
+    <div class="nego-grid" id="nego-grid"></div>
+  </section>
+
   <section class="card">
     <div class="card-head">
       <div>
@@ -709,6 +764,22 @@
     ventaReal: 1768500000,
     superavitReal: 69500000
   };
+
+  // ---------- Cuadro de negociación: 3 modelos comerciales para un proyecto nuevo ----------
+  // Escala a la magnitud de un proyecto real como SYC2025-0188 (VME ~$1.700M).
+  // Modelo A — Comisión 100% comprador: el comprador paga la comisión aparte, el vendedor recibe el 100% del martillo.
+  // Modelo B — Comisión compartida: se reparte entre comprador y vendedor (el vendedor sí ve descontada su parte).
+  // Modelo C — Superávit SYC: el vendedor solo tiene garantizado el VME; SYC participa de lo que se puje por encima.
+  function negoDefault(){
+    return {
+      vme: 1700000000,
+      valorOferta: 5000000,
+      cantidadOfertas: 14,
+      modeloA: {comisionCompradorPct: 10},
+      modeloB: {comisionCompradorPct: 5, comisionVendedorPct: 5},
+      modeloC: {superavitPct: 100}
+    };
+  }
   var AMPAROS = [
     {key:'usada', label:'Usada / Usado'},
     {key:'salvrecup', label:'Salvamento Recuperado'},
@@ -768,7 +839,8 @@
     quickValorTotal: 1500000000,
     quickProbAdj: 60,
     quickPresets: QUICK_PRESETS.map(function(s){ return Object.assign({}, s); }),
-    realCaseLoaded: false
+    realCaseLoaded: false,
+    nego: negoDefault()
   };
 
   // ---------- persistence (per-viewer convenience only) ----------
@@ -798,7 +870,8 @@
         prioridadesIncluidas: state.prioridadesIncluidas, lotes: state.lotes,
         quickValorTotal: state.quickValorTotal, quickProbAdj: state.quickProbAdj,
         quickPresets: state.quickPresets,
-        realCaseLoaded: state.realCaseLoaded, quickBackup: quickBackup
+        realCaseLoaded: state.realCaseLoaded, quickBackup: quickBackup,
+        nego: state.nego
       }));
     }catch(e){}
   }
@@ -823,6 +896,7 @@
     state.quickProbAdj = 60;
     state.quickPresets = QUICK_PRESETS.map(function(s){ return Object.assign({}, s); });
     state.realCaseLoaded = false;
+    state.nego = negoDefault();
   }
 
   // ---------- calculations ----------
@@ -1254,9 +1328,179 @@
     renderRows();
     renderScopeChips();
     renderRealCaseUI();
+    renderNegoInputs();
+    renderNegoCards();
     update();
     saveLocal();
   });
+
+  // ---------- Cuadro de negociación: 3 modelos comerciales para un proyecto nuevo ----------
+  var inNegoVme = document.getElementById('in-nego-vme');
+  var inNegoOferta = document.getElementById('in-nego-oferta');
+  var inNegoCantidad = document.getElementById('in-nego-cantidad');
+  var negoTotals = document.getElementById('nego-totals');
+  var negoGrid = document.getElementById('nego-grid');
+  var negoRefs = null;
+
+  function calcNego(n){
+    var vme = Number(n.vme) || 0;
+    var pujas = (Number(n.valorOferta) || 0) * (Number(n.cantidadOfertas) || 0);
+    var total = vme + pujas;
+
+    var pctA = Number(n.modeloA.comisionCompradorPct) || 0;
+    var comisionA = total * pctA / 100;
+
+    var pctBComprador = Number(n.modeloB.comisionCompradorPct) || 0;
+    var pctBVendedor = Number(n.modeloB.comisionVendedorPct) || 0;
+    var comisionBComprador = total * pctBComprador / 100;
+    var comisionBVendedor = total * pctBVendedor / 100;
+
+    var pctC = Number(n.modeloC.superavitPct) || 0;
+    var sycC = pujas * pctC / 100;
+
+    return {
+      vme: vme, pujas: pujas, total: total,
+      a: {comision: comisionA, ev: total, syc: comisionA},
+      b: {comisionComprador: comisionBComprador, comisionVendedor: comisionBVendedor, ev: total - comisionBVendedor, syc: comisionBComprador + comisionBVendedor},
+      c: {syc: sycC, ev: total - sycC}
+    };
+  }
+
+  function widthPct(part, whole){ return whole > 0 ? Math.max(0, Math.min(100, part / whole * 100)) : 0; }
+
+  function negoPctField(labelText, value, onChange){
+    var wrap = document.createElement('div');
+    var lab = document.createElement('label');
+    lab.textContent = labelText;
+    wrap.appendChild(lab);
+    var wrapPct = document.createElement('div');
+    wrapPct.className = 'input-pct';
+    var input = document.createElement('input');
+    input.type = 'number'; input.min = 0; input.max = 100; input.step = 0.5;
+    input.value = value;
+    input.addEventListener('input', function(){
+      onChange(Number(input.value) || 0);
+      updateNegoResults();
+      saveLocal();
+    });
+    wrapPct.appendChild(input);
+    var suf = document.createElement('span');
+    suf.className = 'pct-suffix';
+    suf.textContent = '%';
+    wrapPct.appendChild(suf);
+    wrap.appendChild(wrapPct);
+    return wrap;
+  }
+
+  function negoResultRow(dotColorVar, label, initialText){
+    var row = document.createElement('div');
+    row.className = 'row';
+    var lbl = document.createElement('span');
+    lbl.className = 'lbl';
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = 'var(' + dotColorVar + ')';
+    lbl.appendChild(dot);
+    lbl.appendChild(document.createTextNode(label));
+    var val = document.createElement('span');
+    val.className = 'val num';
+    val.textContent = initialText;
+    row.appendChild(lbl);
+    row.appendChild(val);
+    return {row: row, valueEl: val};
+  }
+
+  function buildNegoCard(icon, title, desc, pctFields, evLabel, sycLabel){
+    var card = document.createElement('div');
+    card.className = 'nego-card';
+    var h3 = document.createElement('h3');
+    h3.textContent = icon + ' ' + title;
+    card.appendChild(h3);
+    var descEl = document.createElement('div');
+    descEl.className = 'nego-desc';
+    descEl.textContent = desc;
+    card.appendChild(descEl);
+    var pcts = document.createElement('div');
+    pcts.className = 'nego-pcts';
+    pctFields.forEach(function(f){ pcts.appendChild(f); });
+    card.appendChild(pcts);
+    var bar = document.createElement('div');
+    bar.className = 'nego-bar';
+    var barEv = document.createElement('div'); barEv.className = 'seg-ev';
+    var barSyc = document.createElement('div'); barSyc.className = 'seg-syc';
+    bar.appendChild(barEv); bar.appendChild(barSyc);
+    card.appendChild(bar);
+    var split = document.createElement('div');
+    split.className = 'nego-split';
+    var rowEv = negoResultRow('--accent', evLabel, '');
+    var rowSyc = negoResultRow('--accent-2', sycLabel, '');
+    split.appendChild(rowEv.row);
+    split.appendChild(rowSyc.row);
+    card.appendChild(split);
+    negoGrid.appendChild(card);
+    return {barEv: barEv, barSyc: barSyc, ev: rowEv.valueEl, syc: rowSyc.valueEl};
+  }
+
+  function renderNegoCards(){
+    negoGrid.innerHTML = '';
+    negoRefs = {};
+
+    negoRefs.a = buildNegoCard('🅰️', 'Comisión 100% comprador',
+      'El comprador paga la comisión aparte, por encima del martillo — no se descuenta del vendedor.',
+      [negoPctField('% Comisión comprador', state.nego.modeloA.comisionCompradorPct, function(v){ state.nego.modeloA.comisionCompradorPct = v; })],
+      'Empresa Vendedora recibe', 'SYC recibe (comisión)');
+
+    negoRefs.b = buildNegoCard('🅱️', 'Comisión compartida',
+      'Comprador y vendedor aportan cada uno su parte — a la Empresa Vendedora sí se le descuenta su comisión.',
+      [
+        negoPctField('% Comisión comprador', state.nego.modeloB.comisionCompradorPct, function(v){ state.nego.modeloB.comisionCompradorPct = v; }),
+        negoPctField('% Comisión vendedor', state.nego.modeloB.comisionVendedorPct, function(v){ state.nego.modeloB.comisionVendedorPct = v; })
+      ],
+      'Empresa Vendedora recibe', 'SYC recibe (comisión total)');
+
+    negoRefs.c = buildNegoCard('🅲', 'Superávit SYC',
+      'La Empresa Vendedora tiene garantizado el VME — SYC participa de lo que se puje por encima como superávit.',
+      [negoPctField('% Superávit para SYC', state.nego.modeloC.superavitPct, function(v){ state.nego.modeloC.superavitPct = v; })],
+      'Empresa Vendedora recibe', 'SYC recibe (superávit)');
+
+    updateNegoResults();
+  }
+
+  function updateNegoResults(){
+    var r = calcNego(state.nego);
+    negoTotals.innerHTML =
+      '<div class="stat"><span class="l">Valor total pujas</span><span class="v num">' + fmtCOP.format(r.pujas) + '</span></div>' +
+      '<div class="stat"><span class="l">Valor total (martillo)</span><span class="v num">' + fmtCOP.format(r.total) + '</span></div>';
+
+    if(!negoRefs) return;
+
+    var totA = r.a.ev + r.a.syc;
+    negoRefs.a.ev.textContent = fmtCOP.format(r.a.ev);
+    negoRefs.a.syc.textContent = fmtCOP.format(r.a.syc);
+    negoRefs.a.barEv.style.width = widthPct(r.a.ev, totA) + '%';
+    negoRefs.a.barSyc.style.width = widthPct(r.a.syc, totA) + '%';
+
+    var totB = r.b.ev + r.b.syc;
+    negoRefs.b.ev.textContent = fmtCOP.format(r.b.ev);
+    negoRefs.b.syc.textContent = fmtCOP.format(r.b.syc);
+    negoRefs.b.barEv.style.width = widthPct(r.b.ev, totB) + '%';
+    negoRefs.b.barSyc.style.width = widthPct(r.b.syc, totB) + '%';
+
+    var totC = r.c.ev + r.c.syc;
+    negoRefs.c.ev.textContent = fmtCOP.format(r.c.ev);
+    negoRefs.c.syc.textContent = fmtCOP.format(r.c.syc);
+    negoRefs.c.barEv.style.width = widthPct(r.c.ev, totC) + '%';
+    negoRefs.c.barSyc.style.width = widthPct(r.c.syc, totC) + '%';
+  }
+
+  function renderNegoInputs(){
+    setMilesValue(inNegoVme, state.nego.vme);
+    setMilesValue(inNegoOferta, state.nego.valorOferta);
+    inNegoCantidad.value = state.nego.cantidadOfertas;
+  }
+  wireThousands(inNegoVme, function(num){ state.nego.vme = num; updateNegoResults(); saveLocal(); });
+  wireThousands(inNegoOferta, function(num){ state.nego.valorOferta = num; updateNegoResults(); saveLocal(); });
+  inNegoCantidad.addEventListener('input', function(){ state.nego.cantidadOfertas = Number(inNegoCantidad.value)||0; updateNegoResults(); saveLocal(); });
 
   // ---------- rendering: scenario summary + chart ----------
   var scenarioGrid = document.getElementById('scenario-grid');
@@ -1353,6 +1597,8 @@
   renderRows();
   renderScopeChips();
   renderRealCaseUI();
+  renderNegoInputs();
+  renderNegoCards();
   update();
 
   // ---------- shared scenarios (db capability) ----------
